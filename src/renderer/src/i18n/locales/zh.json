@@ -21795,7 +21795,9 @@
           "restoreFailed": "无法取消忽略 {{value0}}",
           "ignoreTooltip": "忽略：批量删除时跳过",
           "stopIgnoring": "取消忽略",
-          "stopIgnoringNamed": "取消忽略 {{value0}}"
+          "stopIgnoringNamed": "取消忽略 {{value0}}",
+          "sortAscending": "升序",
+          "sortDescending": "降序"
         },
         "scan": {
           "progress": "正在扫描工作区 ({{value0}}/{{value1}})",

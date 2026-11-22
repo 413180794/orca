@@ -26,6 +26,7 @@ import {
   removeArrayEntry,
   reportLateWorkspaceCleanupResult
 } from './workspace-cleanup-late-result-report'
+import { notifyWorkspaceCleanupRowObserver } from './workspace-cleanup-row-observer'
 import { reclassifySkippedWorkspaceCleanupAncestors } from './workspace-cleanup-skipped-ancestor-reclassification'
 
 const DEFAULT_WORKSPACE_CLEANUP_REMOVAL_TIMEOUT_MS = 120_000
@@ -201,7 +202,7 @@ export function startWorkspaceCleanupBackgroundRemoval({
           continue
         }
         try {
-          onRowStarted?.(candidate)
+          notifyWorkspaceCleanupRowObserver(onRowStarted, candidate)
           const outcome = await waitForWorkspaceCleanupRemovalWithTimeout(
             removeCandidates([candidate.worktreeId], {
               approvedCandidates: [candidate],
@@ -234,6 +235,7 @@ export function startWorkspaceCleanupBackgroundRemoval({
                 reportFailures(lateResult.failures)
                 if (lateResult.failures.length === 0) {
                   removeArrayEntry(failedCandidates, candidate)
+                  notifyWorkspaceCleanupRowObserver(onRowRemoved, candidate)
                 }
                 resettleSkippedAncestors()
                 emitProgress()
@@ -249,7 +251,7 @@ export function startWorkspaceCleanupBackgroundRemoval({
           if (result.failures.length > 0) {
             failedCandidates.push(candidate)
           } else {
-            onRowRemoved?.(candidate)
+            notifyWorkspaceCleanupRowObserver(onRowRemoved, candidate)
           }
         } catch (error: unknown) {
           failedCandidates.push(candidate)
@@ -284,7 +286,7 @@ export function startWorkspaceCleanupBackgroundRemoval({
         removeCandidates,
         removalTimeoutMs,
         removalSettlementGraceMs,
-        onRowStarted,
+        onRowStarted: (candidate) => notifyWorkspaceCleanupRowObserver(onRowStarted, candidate),
         reportResult: (lateResult, latePendingFailures) => {
           reportLateWorkspaceCleanupResult(lateResult, onLateResult, latePendingFailures)
         }

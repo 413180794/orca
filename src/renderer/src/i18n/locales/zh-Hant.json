@@ -20215,7 +20215,9 @@
           },
           "selectionVanishedCount_other": "所選的 {{count}} 個工作區已不存在。",
           "selectionWithheldCount_other": "所選的 {{count}} 個工作區已被目前的篩選條件隱藏，因此已取消選取。",
-          "lastActive": "上次活動時間：{{value0}}"
+          "lastActive": "上次活動時間：{{value0}}",
+          "sortAscending": "升冪",
+          "sortDescending": "降冪"
         },
         "scan": {
           "progress": "正在掃描工作區（{{value0}}/{{value1}}）",

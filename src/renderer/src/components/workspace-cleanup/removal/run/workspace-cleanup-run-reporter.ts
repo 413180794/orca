@@ -37,33 +37,39 @@ export function createWorkspaceCleanupRunReporter(started: {
   const { runId, attempts } = started
   const store = (): ReturnType<typeof useWorkspaceCleanupRunStore.getState> =>
     useWorkspaceCleanupRunStore.getState()
-  // Each physical removal of a row (first try, requeue, automatic ancestor retry) and each
-  // provisional report starts a new generation; a timer may only expire its own generation.
+  // Each physical removal of a row (first try, requeue, automatic ancestor retry) starts a new
+  // generation; a timer may only expire its own generation, and a repeated provisional report for
+  // the same generation neither restarts its ceiling nor reopens a row it already expired.
   const generations = new Map<string, number>()
   const expiryTimers = new Map<string, number>()
-  const nextGeneration = (identity: string): number => {
+  const expired = new Set<string>()
+  const nextGeneration = (identity: string): void => {
     const timer = expiryTimers.get(identity)
     if (timer !== undefined) {
       window.clearTimeout(timer)
       expiryTimers.delete(identity)
     }
-    const generation = (generations.get(identity) ?? 0) + 1
-    generations.set(identity, generation)
-    return generation
+    expired.delete(identity)
+    generations.set(identity, (generations.get(identity) ?? 0) + 1)
   }
   const settle = (failure: WorkspaceCleanupFailure): void => {
     const identity = getWorkspaceCleanupFailureIdentity(failure)
-    const generation = nextGeneration(identity)
     if (!failure.provisional) {
+      nextGeneration(identity)
       store().markRowFailed(runId, attempts, identity, failure)
       return
     }
+    if (expiryTimers.has(identity) || expired.has(identity)) {
+      return
+    }
+    const generation = generations.get(identity) ?? 0
     store().markRowProvisional(runId, attempts, identity)
     const timer = window.setTimeout(() => {
       expiryTimers.delete(identity)
-      if (generations.get(identity) !== generation) {
+      if ((generations.get(identity) ?? 0) !== generation) {
         return
       }
+      expired.add(identity)
       store().expireProvisionalRow(
         runId,
         attempts,
@@ -97,7 +103,11 @@ export function createWorkspaceCleanupRunReporter(started: {
     onError: (error) => {
       const run = store().run
       // A batch that owns its whole run just goes away; a retry fails only its own row.
-      if (run?.id === runId && run.rows.length === attempts.size) {
+      const ownsWholeRun =
+        run?.id === runId &&
+        run.rows.length === attempts.size &&
+        run.rows.every((row) => attempts.get(row.identity) === row.attempt)
+      if (ownsWholeRun) {
         store().dismissRun(runId)
         return
       }

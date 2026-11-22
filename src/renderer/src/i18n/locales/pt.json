@@ -22112,7 +22112,9 @@
           "ignoreTooltip": "Ignorar: não incluir na exclusão em massa",
           "stopIgnoring": "Parar de ignorar",
           "stopIgnoringNamed": "Parar de ignorar {{value0}}",
-          "workspaceCount_many": "{{count}} espaços de trabalho"
+          "workspaceCount_many": "{{count}} espaços de trabalho",
+          "sortAscending": "crescente",
+          "sortDescending": "decrescente"
         },
         "scan": {
           "progress": "Verificando espaços de trabalho ({{value0}}/{{value1}})",

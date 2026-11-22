@@ -49,7 +49,16 @@ export function WorkspaceCleanupSortSection({
               <span className={cn(!active && 'text-muted-foreground')}>
                 {getWorkspaceCleanupSortFieldLabel(field, t)}
               </span>
-              {active ? <DirectionIcon className="size-3" aria-hidden="true" /> : null}
+              {active ? (
+                <>
+                  <DirectionIcon className="size-3" aria-hidden="true" />
+                  <span className="sr-only">
+                    {sort.direction === 'asc'
+                      ? t('components.workspace.cleanup.browse.sortAscending', 'ascending')
+                      : t('components.workspace.cleanup.browse.sortDescending', 'descending')}
+                  </span>
+                </>
+              ) : null}
             </Button>
           )
         })}

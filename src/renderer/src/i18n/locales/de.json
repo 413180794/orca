@@ -20527,7 +20527,9 @@
           "selectionVanishedCount_other": "{{count}} ausgewählte Arbeitsbereiche existieren nicht mehr.",
           "selectionWithheldCount_one": "{{count}} ausgewählter Arbeitsbereich wird durch die aktuellen Filter ausgeblendet und wurde abgewählt.",
           "selectionWithheldCount_other": "{{count}} ausgewählte Arbeitsbereiche werden durch die aktuellen Filter ausgeblendet und wurden abgewählt.",
-          "lastActive": "Zuletzt aktiv: {{value0}}"
+          "lastActive": "Zuletzt aktiv: {{value0}}",
+          "sortAscending": "aufsteigend",
+          "sortDescending": "absteigend"
         },
         "scan": {
           "progress": "Arbeitsbereiche werden geprüft ({{value0}}/{{value1}})",

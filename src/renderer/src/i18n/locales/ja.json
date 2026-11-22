@@ -20889,7 +20889,9 @@
           "restoreFailed": "{{value0}} の無視を解除できませんでした",
           "ignoreTooltip": "無視: 一括削除でスキップ",
           "stopIgnoring": "無視を解除",
-          "stopIgnoringNamed": "{{value0}} の無視を解除"
+          "stopIgnoringNamed": "{{value0}} の無視を解除",
+          "sortAscending": "昇順",
+          "sortDescending": "降順"
         },
         "scan": {
           "progress": "ワークスペースのスキャン ({{value0}}/{{value1}})",

@@ -150,6 +150,31 @@ describe('workspace cleanup run', () => {
     expect(statuses()).toEqual(['failed'])
   })
 
+  it('keeps an expired row failed when the batch repeats its timeout, without restarting the ceiling', () => {
+    const reporter = createWorkspaceCleanupRunReporter(store().startRun([candidates[0]]))
+    act(() => reporter.onRowFailed(failure(0, { provisional: true })))
+    act(() => vi.advanceTimersByTime(HALF_CEILING))
+    // The batch reports the same timeout again; the first ceiling still applies.
+    act(() => reporter.onResult(result([], [failure(0, { provisional: true })])))
+    act(() => vi.advanceTimersByTime(HALF_CEILING))
+    expect(statuses()).toEqual(['failed'])
+    act(() => reporter.onLateResult(result([], [failure(0, { provisional: true })])))
+    expect(statuses()).toEqual(['failed'])
+    // An authoritative success still lands.
+    act(() => reporter.onLateResult(result([0])))
+    expect(statuses()).toEqual(['deleted'])
+  })
+
+  it('keeps a retried row when the original batch errors afterwards', () => {
+    const first = createWorkspaceCleanupRunReporter(store().startRun([candidates[0]]))
+    act(() => first.onRowFailed(failure(0)))
+    act(() => {
+      store().beginRowRetry(candidates[0])
+    })
+    act(() => first.onError(new Error('late')))
+    expect(statuses()).toEqual(['deleting'])
+  })
+
   it('fails only the batch rows that never reported', () => {
     const reporter = createWorkspaceCleanupRunReporter(store().startRun(candidates))
     const [a, b] = [candidates[0], candidates[1]]

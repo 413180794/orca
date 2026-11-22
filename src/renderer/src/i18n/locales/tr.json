@@ -20651,7 +20651,9 @@
           "selectionVanishedCount_one": "Seçili {{count}} çalışma alanı artık mevcut değil.",
           "selectionWithheldCount_other": "Seçili {{count}} çalışma alanı geçerli filtreler tarafından gizlendiği için seçimden çıkarıldı.",
           "selectionWithheldCount_one": "Seçili {{count}} çalışma alanı geçerli filtreler tarafından gizlendiği için seçimden çıkarıldı.",
-          "lastActive": "Son etkinlik: {{value0}}"
+          "lastActive": "Son etkinlik: {{value0}}",
+          "sortAscending": "artan",
+          "sortDescending": "azalan"
         },
         "scan": {
           "progress": "Çalışma alanları taranıyor ({{value0}}/{{value1}})",

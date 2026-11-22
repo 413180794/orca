@@ -263,18 +263,18 @@ describe('WorkspaceCleanupDialog stale-while-revalidate', () => {
     expect(rowNames()).toEqual(['alpha', 'beta'])
     expect(rowCheckbox('alpha')?.getAttribute('aria-checked')).toBe('true')
 
-    const clickByText = async (text: string): Promise<void> => {
-      await act(async () => {
-        ;[...(container?.querySelectorAll('button') ?? [])]
-          .find((button) => button.textContent?.includes(text))
-          ?.click()
-      })
+    const clickButton = async (name: RegExp): Promise<void> => {
+      const button = [...(container?.querySelectorAll('button') ?? [])].find((candidate) =>
+        name.test(candidate.textContent?.trim() ?? '')
+      )
+      expect(button, `button ${name}`).toBeDefined()
+      await act(async () => button?.click())
       await flush()
     }
-    await clickByText('Delete selected')
-    // Confirmation's header Back is the first button in the view.
-    await act(async () => container?.querySelector('button')?.click())
-    await flush()
+    await clickButton(/^Delete 1 workspace$/)
+    expect(container?.textContent).toContain('Delete 1 workspace?')
+    await clickButton(/^Back$/)
+    expect(container?.textContent).not.toContain('Delete 1 workspace?')
     expect(rowNames()).toEqual(['alpha', 'beta'])
     expect(rowCheckbox('alpha')?.getAttribute('aria-checked')).toBe('true')
     expect(holders.infoToasts).toEqual([])
