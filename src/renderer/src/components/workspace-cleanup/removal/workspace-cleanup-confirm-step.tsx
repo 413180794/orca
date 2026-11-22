@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { DialogFooter } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -46,7 +46,9 @@ export function WorkspaceCleanupConfirmStep({
   onConfirm: () => void
 }): React.JSX.Element {
   const t = useTranslate()
+  const backButton = useRef<HTMLButtonElement>(null)
   const sections = useMemo(() => splitWorkspaceCleanupConfirmSections(candidates), [candidates])
+  useLayoutEffect(() => backButton.current?.focus(), [])
   return (
     <>
       <WorkspaceCleanupDialogHeader
@@ -77,7 +79,7 @@ export function WorkspaceCleanupConfirmStep({
         ) : null}
       </ScrollArea>
       <DialogFooter variant="bar" className="flex-row flex-wrap justify-between sm:justify-between">
-        <Button variant="outline" onClick={onBack}>
+        <Button ref={backButton} variant="outline" onClick={onBack}>
           {t('components.workspace.cleanup.confirm.back', 'Back')}
         </Button>
         <Button variant="destructive" disabled={candidates.length === 0} onClick={onConfirm}>
@@ -108,7 +110,7 @@ function ConfirmSection({
     <section aria-label={title}>
       <h3
         className={cn(
-          'flex items-baseline gap-2 border-b border-border bg-muted/25 px-4 py-2 text-xs font-medium',
+          'sticky top-0 z-10 flex items-baseline gap-2 border-b border-border bg-muted px-4 py-2 text-xs font-medium',
           warning ? 'text-status-warning-text' : 'text-foreground'
         )}
       >

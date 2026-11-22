@@ -21845,6 +21845,7 @@
           "localFilesSection": "本地文件将丢失",
           "back": "返回",
           "deletePermanently": "永久删除",
+          "retryDescription": "这会永久删除 {{name}} 及其本地文件。",
           "showMore": "再显示 {{count}} 个"
         },
         "review": {

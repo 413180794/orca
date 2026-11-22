@@ -1,7 +1,17 @@
 import React, { memo, useMemo, useState } from 'react'
 import { Check, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { DialogFooter } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from '@/components/ui/dialog'
+import { DialogCancel } from '@/components/ui/dialog-parts'
 import { Progress } from '@/components/ui/progress'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { cn } from '@/lib/class-names'
@@ -12,6 +22,7 @@ import { WorkspaceCleanupDialogHeader } from '../../dialog/workspace-cleanup-dia
 import { formatWorkspaceCleanupRelativeTime } from '../../candidate-list/workspace-cleanup-relative-time'
 import { WorkspaceCleanupCandidateList } from '../../candidate-list/workspace-cleanup-candidate-list'
 import { WorkspaceCleanupRunRowLabel } from './workspace-cleanup-run-row-label'
+import { WorkspaceCleanupRunOutcomeIcon } from './workspace-cleanup-run-outcome-icon'
 import {
   getWorkspaceCleanupRunCounts,
   getWorkspaceCleanupRunPhase,
@@ -58,12 +69,15 @@ export function WorkspaceCleanupRunStep({
     <>
       <WorkspaceCleanupDialogHeader
         title={
-          running
-            ? t('components.workspace.cleanup.deleting.title', 'Deleting {{count}} workspaces', {
-                count: counts.total,
-                defaultValue_one: 'Deleting {{count}} workspace'
-              })
-            : t(
+          running ? (
+            t('components.workspace.cleanup.deleting.title', 'Deleting {{count}} workspaces', {
+              count: counts.total,
+              defaultValue_one: 'Deleting {{count}} workspace'
+            })
+          ) : (
+            <span className="flex items-center gap-2">
+              <WorkspaceCleanupRunOutcomeIcon hasFailures={counts.failed > 0} />
+              {t(
                 'components.workspace.cleanup.done.title',
                 'Deleted {{deleted}} of {{total}} workspaces',
                 {
@@ -71,7 +85,9 @@ export function WorkspaceCleanupRunStep({
                   total: counts.total,
                   defaultValue_one: 'Deleted {{deleted}} of {{total}} workspace'
                 }
-              )
+              )}
+            </span>
+          )
         }
         closeLabel={
           running
@@ -117,8 +133,8 @@ export function WorkspaceCleanupRunStep({
           )}
         />
       </ScrollArea>
-      <DialogFooter variant="bar">
-        <Button onClick={running ? onClose : onDone}>
+      <DialogFooter variant="bar" className="flex-row justify-end">
+        <Button variant={running ? 'outline' : 'default'} onClick={running ? onClose : onDone}>
           {running
             ? t('components.workspace.cleanup.deleting.runInBackground', 'Run in background')
             : t('components.workspace.cleanup.done.button', 'Done')}
@@ -190,15 +206,38 @@ const RunRow = memo(function RunRow({
                 <span className="min-w-0 break-words">{failure.message}</span>
               ) : null}
               {failure?.canDeleteAnyway ? (
-                <Button
-                  variant="destructive-link"
-                  size="inline"
-                  onClick={() => onDeleteAnyway(row.candidate)}
-                >
-                  <span className="text-xs">
-                    {t('components.workspace.cleanup.browse.deleteAnyway', 'Delete anyway')}
-                  </span>
-                </Button>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="destructive-chip" size="xs">
+                      {t('components.workspace.cleanup.browse.deleteAnyway', 'Delete anyway')}
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent size="confirm" surface="security" initialFocus="cancel">
+                    <DialogHeader>
+                      <DialogTitle>
+                        {t('components.workspace.cleanup.browse.deleteAnyway', 'Delete anyway')}
+                      </DialogTitle>
+                      <DialogDescription>
+                        {t(
+                          'components.workspace.cleanup.confirm.retryDescription',
+                          'This permanently deletes {{name}} and its local files.',
+                          { name: row.candidate.displayName }
+                        )}
+                      </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                      <DialogCancel />
+                      <DialogClose asChild>
+                        <Button variant="destructive" onClick={() => onDeleteAnyway(row.candidate)}>
+                          {t(
+                            'components.workspace.cleanup.confirm.deletePermanently',
+                            'Delete permanently'
+                          )}
+                        </Button>
+                      </DialogClose>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               ) : null}
             </div>
           ) : undefined

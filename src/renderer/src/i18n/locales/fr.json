@@ -20618,6 +20618,7 @@
           "localFilesSection": "Les fichiers locaux seront perdus",
           "back": "Retour",
           "deletePermanently": "Supprimer définitivement",
+          "retryDescription": "Cette action supprime définitivement {{name}} et ses fichiers locaux.",
           "showMore": "Afficher {{count}} de plus"
         },
         "review": {

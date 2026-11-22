@@ -20935,6 +20935,7 @@
           "localFilesSection": "ローカルファイルは失われます",
           "back": "戻る",
           "deletePermanently": "完全に削除",
+          "retryDescription": "{{name}} とそのローカルファイルは完全に削除されます。",
           "showMore": "さらに {{count}} 件を表示"
         },
         "review": {

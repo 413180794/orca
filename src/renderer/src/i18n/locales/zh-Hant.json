@@ -20258,6 +20258,7 @@
           "localFilesSection": "本機檔案將遺失",
           "back": "返回",
           "deletePermanently": "永久刪除",
+          "retryDescription": "這會永久刪除 {{name}} 及其本機檔案。",
           "showMore": "再顯示 {{count}} 個"
         },
         "review": {

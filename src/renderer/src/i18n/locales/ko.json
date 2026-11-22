@@ -21936,6 +21936,7 @@
           "localFilesSection": "로컬 파일이 사라집니다",
           "back": "뒤로",
           "deletePermanently": "영구 삭제",
+          "retryDescription": "{{name}} 및 해당 로컬 파일이 영구적으로 삭제됩니다.",
           "showMore": "{{count}}개 더 보기",
           "deletingTitle_one": "워크스페이스 {{count}}개 삭제 중",
           "deletingTitle_other": "워크스페이스 {{count}}개 삭제 중"

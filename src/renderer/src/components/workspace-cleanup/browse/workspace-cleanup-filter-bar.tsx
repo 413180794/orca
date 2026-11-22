@@ -96,21 +96,12 @@ export function WorkspaceCleanupFilterBar({
           <PopoverContent
             align="end"
             sideOffset={6}
-            // Portaled content needs the wheel shim for Radix scroll-lock, but not popover-scroll-content’s max-height, which would crush the facet column.
-            className="popover-wheel-scroll flex h-[min(471px,var(--radix-popover-content-available-height))] w-[320px] flex-col p-0"
+            collisionPadding={24}
+            wheelScroll
+            className="flex h-[min(471px,var(--radix-popover-content-available-height))] w-[320px] flex-col p-0"
           >
-            {/* 471px preserves the 420px facet viewport plus the fixed footer at full height. */}
-            <ScrollArea className="min-h-0 flex-1">
-              <WorkspaceCleanupSortSection
-                sort={sort}
-                sizeScan={sizeScan}
-                onToggleSortField={onToggleSortField}
-              />
-              <WorkspaceCleanupLifecycleFacets {...facetProps} />
-              <WorkspaceCleanupGitReviewFacets {...facetProps} />
-            </ScrollArea>
-            <div className="flex items-center justify-between gap-2 border-t border-border px-3 py-2">
-              <span className="text-[11px] text-muted-foreground">
+            <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border px-3 py-2">
+              <span className="text-2xs text-muted-foreground">
                 {t(
                   'components.workspace.cleanup.browse.showingCount',
                   'Showing {{value0}} of {{value1}}',
@@ -127,6 +118,15 @@ export function WorkspaceCleanupFilterBar({
                 {t('components.workspace.cleanup.browse.clearFilters', 'Clear filters')}
               </Button>
             </div>
+            <ScrollArea className="min-h-0 flex-1">
+              <WorkspaceCleanupSortSection
+                sort={sort}
+                sizeScan={sizeScan}
+                onToggleSortField={onToggleSortField}
+              />
+              <WorkspaceCleanupLifecycleFacets {...facetProps} />
+              <WorkspaceCleanupGitReviewFacets {...facetProps} />
+            </ScrollArea>
           </PopoverContent>
         </Popover>
       </div>

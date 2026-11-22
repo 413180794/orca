@@ -20698,6 +20698,7 @@
           "localFilesSection": "Yerel dosyalar kaybolacak",
           "back": "Geri",
           "deletePermanently": "Kalıcı olarak sil",
+          "retryDescription": "Bu işlem {{name}} çalışma alanını ve yerel dosyalarını kalıcı olarak siler.",
           "showMore": "{{count}} tane daha göster"
         },
         "review": {

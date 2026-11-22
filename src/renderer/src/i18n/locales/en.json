@@ -23020,6 +23020,7 @@
           "localFilesSection": "Local files will be lost",
           "back": "Back",
           "deletePermanently": "Delete permanently",
+          "retryDescription": "This permanently deletes {{name}} and its local files.",
           "showMore": "Show {{count}} more"
         },
         "review": {

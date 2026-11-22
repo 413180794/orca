@@ -22163,6 +22163,7 @@
           "localFilesSection": "Os arquivos locais serão perdidos",
           "back": "Voltar",
           "deletePermanently": "Excluir permanentemente",
+          "retryDescription": "Isso exclui permanentemente {{name}} e seus arquivos locais.",
           "showMore": "Mostrar mais {{count}}"
         },
         "review": {

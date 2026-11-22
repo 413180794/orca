@@ -2,7 +2,9 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useAppStore } from '@/store'
+import type { WorkspaceCleanupRemoveResult } from '@/store/slices/workspace-cleanup/workspace-cleanup-removal'
 import { makeFacetCandidate as makeCandidate } from '../../query/workspace-cleanup-facet.test.fixture'
+import type { WorkspaceCleanupCandidate } from '../../../../../../shared/workspace-cleanup/workspace-cleanup'
 import { getWorkspaceCleanupCandidateIdentity } from '../../../../../../shared/workspace-cleanup/workspace-cleanup-host-identity'
 import { WorkspaceCleanupRunCard } from './WorkspaceCleanupRunCard'
 import {
@@ -16,6 +18,7 @@ import {
   type WorkspaceCleanupRun
 } from './workspace-cleanup-run-store'
 import { orderWorkspaceCleanupRunRows } from './workspace-cleanup-run-step'
+import { startWorkspaceCleanupBackgroundRemoval } from '../settlement/workspace-cleanup-background-removal'
 
 const candidates = ['a', 'b', 'c'].map((name) =>
   makeCandidate({ worktreeId: `repo-1::/repo/${name}`, displayName: name })
@@ -163,6 +166,63 @@ describe('workspace cleanup run', () => {
     // An authoritative success still lands.
     act(() => reporter.onLateResult(result([0])))
     expect(statuses()).toEqual(['deleted'])
+  })
+
+  it('keeps the definitive failure when a sibling retry publishes an older timeout', async () => {
+    const rows = ['/repo/cafe\u0301', '/repo/café', '/repo/café/child'].map((path) =>
+      makeCandidate({ worktreeId: `repo-1::${path}`, path })
+    )
+    const [first, second, child] = rows
+    const removals = new Map(
+      rows.map((row) => [row.worktreeId, Promise.withResolvers<WorkspaceCleanupRemoveResult>()])
+    )
+    const reporter = createWorkspaceCleanupRunReporter(store().startRun(rows))
+    const failureMessage = 'First parent workspace remained locked'
+    const expectFirstFailure = () => {
+      expect(run().rows[0]).toMatchObject({
+        status: 'failed',
+        failure: { message: failureMessage }
+      })
+    }
+    const complete = (row: WorkspaceCleanupCandidate) => {
+      removals.get(row.worktreeId)!.resolve({
+        removedIds: [row.worktreeId],
+        removedIdentities: [getWorkspaceCleanupCandidateIdentity(row)],
+        failures: []
+      })
+    }
+
+    startWorkspaceCleanupBackgroundRemoval({
+      ...reporter,
+      candidates: rows,
+      removeCandidates: ([worktreeId]) => removals.get(worktreeId)!.promise,
+      onProgress: () => {},
+      removalTimeoutMs: 10,
+      removalSettlementGraceMs: 5
+    })
+    await vi.advanceTimersByTimeAsync(15)
+    expect(statuses()).toEqual(['provisional', 'provisional', 'provisional'])
+    complete(child)
+    await vi.advanceTimersByTimeAsync(15)
+    expect(statuses()[1]).toBe('deleting')
+
+    removals.get(first.worktreeId)!.reject(new Error(failureMessage))
+    await vi.advanceTimersByTimeAsync(0)
+    expectFirstFailure()
+    complete(second)
+    await vi.advanceTimersByTimeAsync(0)
+    expectFirstFailure()
+    await vi.advanceTimersByTimeAsync(WORKSPACE_CLEANUP_PROVISIONAL_CEILING_MS)
+    expectFirstFailure()
+
+    reporter.onRowStarted(first)
+    reporter.onRowFailed({
+      worktreeId: first.worktreeId,
+      displayName: first.displayName,
+      provisional: true,
+      message: 'New retry timed out'
+    })
+    expect(statuses()[0]).toBe('provisional')
   })
 
   it('keeps a retried row when the original batch errors afterwards', () => {

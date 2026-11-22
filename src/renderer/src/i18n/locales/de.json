@@ -20574,6 +20574,7 @@
           "localFilesSection": "Lokale Dateien gehen verloren",
           "back": "Zurück",
           "deletePermanently": "Endgültig löschen",
+          "retryDescription": "Dadurch werden {{name}} und die zugehörigen lokalen Dateien dauerhaft gelöscht.",
           "showMore": "{{count}} weitere anzeigen"
         },
         "review": {

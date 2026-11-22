@@ -21260,6 +21260,7 @@
           "localFilesSection": "Локальные файлы будут потеряны",
           "back": "Назад",
           "deletePermanently": "Удалить навсегда",
+          "retryDescription": "Это действие навсегда удалит {{name}} и его локальные файлы.",
           "showMore": "Показать ещё {{count}}"
         },
         "review": {

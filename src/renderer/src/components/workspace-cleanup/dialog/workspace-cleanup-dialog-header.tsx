@@ -15,7 +15,7 @@ export function WorkspaceCleanupDialogHeader({
   closeLabel,
   onClose
 }: {
-  title: string
+  title: React.ReactNode
   loading?: boolean
   /** Git answers are still arriving; the icon spins but a refresh stays available. */
   checking?: boolean

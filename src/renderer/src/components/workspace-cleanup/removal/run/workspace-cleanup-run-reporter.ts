@@ -37,29 +37,28 @@ export function createWorkspaceCleanupRunReporter(started: {
   const { runId, attempts } = started
   const store = (): ReturnType<typeof useWorkspaceCleanupRunStore.getState> =>
     useWorkspaceCleanupRunStore.getState()
-  // Each physical removal of a row (first try, requeue, automatic ancestor retry) starts a new
-  // generation; a timer may only expire its own generation, and a repeated provisional report for
-  // the same generation neither restarts its ceiling nor reopens a row it already expired.
+  // A physical retry starts a new generation. Its timer and provisional reports cannot reopen a settled failure.
   const generations = new Map<string, number>()
   const expiryTimers = new Map<string, number>()
-  const expired = new Set<string>()
+  const settledFailures = new Set<string>()
   const nextGeneration = (identity: string): void => {
     const timer = expiryTimers.get(identity)
     if (timer !== undefined) {
       window.clearTimeout(timer)
       expiryTimers.delete(identity)
     }
-    expired.delete(identity)
+    settledFailures.delete(identity)
     generations.set(identity, (generations.get(identity) ?? 0) + 1)
   }
   const settle = (failure: WorkspaceCleanupFailure): void => {
     const identity = getWorkspaceCleanupFailureIdentity(failure)
     if (!failure.provisional) {
       nextGeneration(identity)
+      settledFailures.add(identity)
       store().markRowFailed(runId, attempts, identity, failure)
       return
     }
-    if (expiryTimers.has(identity) || expired.has(identity)) {
+    if (expiryTimers.has(identity) || settledFailures.has(identity)) {
       return
     }
     const generation = generations.get(identity) ?? 0
@@ -69,7 +68,7 @@ export function createWorkspaceCleanupRunReporter(started: {
       if ((generations.get(identity) ?? 0) !== generation) {
         return
       }
-      expired.add(identity)
+      settledFailures.add(identity)
       store().expireProvisionalRow(
         runId,
         attempts,

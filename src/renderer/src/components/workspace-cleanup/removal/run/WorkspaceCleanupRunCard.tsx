@@ -1,10 +1,11 @@
 import React from 'react'
-import { Check, Loader2, X } from 'lucide-react'
+import { Loader2, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { useAppStore } from '@/store'
 import { useTranslate } from '@/i18n/use-translate'
+import { WorkspaceCleanupRunOutcomeIcon } from './workspace-cleanup-run-outcome-icon'
 import {
   getWorkspaceCleanupRunCounts,
   getWorkspaceCleanupRunPhase,
@@ -59,10 +60,7 @@ export function WorkspaceCleanupRunCardContent({
               aria-hidden="true"
             />
           ) : (
-            <Check
-              className="size-4 shrink-0 text-[var(--git-decoration-added)]"
-              aria-hidden="true"
-            />
+            <WorkspaceCleanupRunOutcomeIcon hasFailures={counts.failed > 0} />
           )}
           <span className="min-w-0 flex-1 text-sm font-semibold" aria-hidden="true">
             {running ? runningTitle : finishedTitle}
