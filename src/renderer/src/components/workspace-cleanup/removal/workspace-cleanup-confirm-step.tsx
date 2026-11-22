@@ -76,7 +76,7 @@ export function WorkspaceCleanupConfirmStep({
           />
         ) : null}
       </ScrollArea>
-      <DialogFooter variant="bar" className="sm:justify-between">
+      <DialogFooter variant="bar" className="flex-row flex-wrap justify-between sm:justify-between">
         <Button variant="outline" onClick={onBack}>
           {t('components.workspace.cleanup.confirm.back', 'Back')}
         </Button>

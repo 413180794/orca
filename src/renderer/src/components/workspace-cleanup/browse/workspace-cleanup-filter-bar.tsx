@@ -61,7 +61,7 @@ export function WorkspaceCleanupFilterBar({
   const filtersLabel = t('components.workspace.cleanup.browse.filters', 'Filters')
   return (
     <div className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-2.5">
-      <div className="relative w-[28rem] min-w-[180px] shrink">
+      <div className="relative min-w-[180px] max-w-md flex-1">
         <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
         <Input
           value={filters.query}
