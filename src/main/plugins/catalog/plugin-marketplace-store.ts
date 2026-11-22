@@ -42,6 +42,7 @@ const legacySnapshotSchema = z.strictObject({
 const cachedSnapshotSchema = z.strictObject({
   schemaVersion: z.literal(2),
   ...snapshotFields,
+  catalogRepository: z.enum(['repository', 'replacement']).optional(),
   marketplace: pluginMarketplaceListingSchema
 })
 
@@ -49,6 +50,16 @@ export type PluginMarketplaceRegisteredSource = z.infer<typeof registeredSourceS
 export type PluginMarketplaceCachedSnapshot =
   | z.infer<typeof cachedSnapshotSchema>
   | z.infer<typeof legacySnapshotSchema>
+
+export type CatalogRepositorySlot = NonNullable<
+  z.infer<typeof cachedSnapshotSchema>['catalogRepository']
+>
+
+export function snapshotRepositorySlot(
+  snapshot?: PluginMarketplaceCachedSnapshot | null
+): CatalogRepositorySlot {
+  return (snapshot?.schemaVersion === 2 && snapshot.catalogRepository) || 'repository'
+}
 
 // Why a separate file: sources.json is parsed strictly by older builds, so it can't gain fields.
 const seededDefaultsSchema = z.object({
@@ -159,6 +170,7 @@ export class PluginMarketplaceStore {
     source: PluginMarketplaceRegisteredSource
     marketplaceCommit: string
     fetchedAt?: number
+    catalogRepository?: CatalogRepositorySlot
     marketplace: PluginMarketplace
   }): Promise<PluginMarketplaceCachedSnapshot> {
     const snapshot = cachedSnapshotSchema.parse({
@@ -167,9 +179,18 @@ export class PluginMarketplaceStore {
       source: input.source.source,
       marketplaceCommit: input.marketplaceCommit,
       fetchedAt: input.fetchedAt ?? Date.now(),
+      ...(input.catalogRepository === 'replacement'
+        ? { catalogRepository: input.catalogRepository }
+        : {}),
       marketplace: input.marketplace
     })
-    await writeAtomicJson(this.snapshotPath(input.source.id), snapshot)
+    const path = this.snapshotPath(input.source.id)
+    const text = `${JSON.stringify(snapshot)}\n`
+    if (Buffer.byteLength(text) > SNAPSHOT_FILE_MAX_BYTES) {
+      throw new Error('marketplace snapshot exceeds its size limit')
+    }
+    await mkdir(this.snapshotDirectory, { recursive: true })
+    await writePluginFileAtomically(path, text)
     this.snapshots.set(input.source.id, Promise.resolve(snapshot))
     return snapshot
   }
@@ -182,7 +203,11 @@ export class PluginMarketplaceStore {
       snapshot = this.readSnapshotFromDisk(parsedId)
       this.snapshots.set(parsedId, snapshot)
       // Why: a failed read must be retried, not cached.
-      void snapshot.catch(() => this.snapshots.delete(parsedId))
+      void snapshot.catch(() => {
+        if (this.snapshots.get(parsedId) === snapshot) {
+          this.snapshots.delete(parsedId)
+        }
+      })
     }
     return snapshot
   }
