@@ -1,6 +1,4 @@
 // @vitest-environment happy-dom
-
-// @vitest-environment happy-dom
 import { type ReactNode, type Ref, act } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -280,14 +278,12 @@ describe('WorkspaceCleanupDialog stale-while-revalidate', () => {
     expect(holders.infoToasts).toEqual([])
   })
 
-  it('does not clear selection while free-text search hides the row', async () => {
+  it('clears selection when free-text search hides the row', async () => {
     installApi(cachedFleet())
     await renderDialog()
     await openDialog()
 
-    if (rowCheckbox('alpha')?.getAttribute('aria-checked') !== 'true') {
-      await act(async () => rowCheckbox('alpha')?.click())
-    }
+    await act(async () => rowCheckbox('alpha')?.click())
     expect(rowCheckbox('alpha')?.getAttribute('aria-checked')).toBe('true')
     const search = container?.querySelector<HTMLInputElement>('[aria-label="Search workspaces"]')
     const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set
@@ -303,7 +299,7 @@ describe('WorkspaceCleanupDialog stale-while-revalidate', () => {
       search?.dispatchEvent(new Event('input', { bubbles: true }))
     })
     await flush()
-    expect(rowCheckbox('alpha')?.getAttribute('aria-checked')).toBe('true')
+    expect(rowCheckbox('alpha')?.getAttribute('aria-checked')).toBe('false')
   })
 
   it('reports selections removed by facet filters', async () => {

@@ -182,13 +182,13 @@ function WorkspaceCleanupDialogContent({
   const initialLoading = loading && candidates.length === 0
 
   const pruneSelectionToVisibleRows = useEffectEvent(() => {
-    if (!open || removal.confirming) {
+    if (!open || removal.confirming || selectedIds.size === 0) {
       return
     }
+    const matchedIdentities = new Set(facetRows.rows.map((row) => row.identity))
     const next = new Set(
       [...selectedIds].filter(
-        (identity) =>
-          facetRows.facetMatchedIdentities.has(identity) && !deletingIdentities.has(identity)
+        (identity) => matchedIdentities.has(identity) && !deletingIdentities.has(identity)
       )
     )
     if (next.size === selectedIds.size) {
