@@ -98,7 +98,7 @@ export function WorkspaceCleanupFilterBar({
             sideOffset={6}
             collisionPadding={24}
             wheelScroll
-            className="flex h-[min(471px,var(--radix-popover-content-available-height))] w-[320px] flex-col p-0"
+            className="flex h-[min(471px,var(--radix-popover-content-available-height))] w-[320px] flex-col"
           >
             <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border px-3 py-2">
               <span className="text-2xs text-muted-foreground">
