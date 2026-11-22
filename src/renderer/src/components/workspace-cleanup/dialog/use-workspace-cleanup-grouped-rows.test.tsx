@@ -5,8 +5,10 @@ import type { WorkspaceCleanupCandidate } from '../../../../../shared/workspace-
 import { getWorkspaceCleanupCandidateIdentity } from '../../../../../shared/workspace-cleanup/workspace-cleanup-host-identity'
 import type { WorkspaceCleanupFacets } from '../query/workspace-cleanup-facets'
 import { getSelectedDeletableCandidates } from '../browse/workspace-cleanup-selection-model'
-import { makeCandidate } from '../query/workspace-cleanup-candidate-state.test-fixture'
-import { makeFacets } from '../query/workspace-cleanup-facet.test.fixture'
+import {
+  makeFacetCandidate as makeCandidate,
+  makeFacets
+} from '../query/workspace-cleanup-facet.test.fixture'
 import { useWorkspaceCleanupGroupedRows } from './use-workspace-cleanup-grouped-rows'
 
 const NONE: ReadonlySet<string> = new Set()

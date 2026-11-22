@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { getWorkspaceCleanupCandidateIdentity } from '../../../../../shared/workspace-cleanup/workspace-cleanup-host-identity'
 import type { WorkspaceCleanupCandidate } from '../../../../../shared/workspace-cleanup/workspace-cleanup'
-import { makeCandidate } from '../query/workspace-cleanup-candidate-state.test-fixture'
+import { makeFacetCandidate as makeCandidate } from '../query/workspace-cleanup-facet.test.fixture'
 import {
   computeWorkspaceCleanupFacetList,
   createWorkspaceCleanupFacetListCache

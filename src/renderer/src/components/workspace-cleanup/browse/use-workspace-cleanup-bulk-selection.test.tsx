@@ -5,8 +5,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { WorkspaceCleanupCandidate } from '../../../../../shared/workspace-cleanup/workspace-cleanup'
 import { getWorkspaceCleanupCandidateIdentity } from '../../../../../shared/workspace-cleanup/workspace-cleanup-host-identity'
 import type { WorkspaceCleanupFacets } from '../query/workspace-cleanup-facets'
-import { makeCandidate } from '../query/workspace-cleanup-candidate-state.test-fixture'
-import { makeFacets } from '../query/workspace-cleanup-facet.test.fixture'
+import {
+  makeFacetCandidate as makeCandidate,
+  makeFacets
+} from '../query/workspace-cleanup-facet.test.fixture'
 import { useWorkspaceCleanupBulkSelection } from './use-workspace-cleanup-bulk-selection'
 
 vi.mock('sonner', () => ({ toast: { info: vi.fn() } }))

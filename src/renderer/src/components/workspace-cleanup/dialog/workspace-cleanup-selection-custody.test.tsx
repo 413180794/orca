@@ -7,8 +7,10 @@ import { getWorkspaceCleanupCandidateIdentity } from '../../../../../shared/work
 import { getSelectedDeletableCandidates } from '../browse/workspace-cleanup-selection-model'
 import { useWorkspaceCleanupHeldRows } from '../candidate-list/use-workspace-cleanup-row-order'
 import type { WorkspaceCleanupFacets } from '../query/workspace-cleanup-facets'
-import { makeCandidate } from '../query/workspace-cleanup-candidate-state.test-fixture'
-import { makeFacets } from '../query/workspace-cleanup-facet.test.fixture'
+import {
+  makeFacetCandidate as makeCandidate,
+  makeFacets
+} from '../query/workspace-cleanup-facet.test.fixture'
 import { useWorkspaceCleanupGroupedRows } from './use-workspace-cleanup-grouped-rows'
 
 // Both list hooks wired the way the dialog wires them: the held order reads the FILTERED rows

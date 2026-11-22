@@ -2,7 +2,7 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useAppStore } from '@/store'
-import { makeCandidate } from '../../query/workspace-cleanup-candidate-state.test-fixture'
+import { makeFacetCandidate as makeCandidate } from '../../query/workspace-cleanup-facet.test.fixture'
 import { getWorkspaceCleanupCandidateIdentity } from '../../../../../../shared/workspace-cleanup/workspace-cleanup-host-identity'
 import { WorkspaceCleanupRunCard } from './WorkspaceCleanupRunCard'
 import {

@@ -3,7 +3,7 @@ import { cleanup, fireEvent, render, screen, within } from '@testing-library/rea
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { WorkspaceCleanupCandidate } from '../../../../../shared/workspace-cleanup/workspace-cleanup'
 import { Dialog } from '@/components/ui/dialog'
-import { makeCandidate } from '../query/workspace-cleanup-candidate-state.test-fixture'
+import { makeFacetCandidate as makeCandidate } from '../query/workspace-cleanup-facet.test.fixture'
 import {
   splitWorkspaceCleanupConfirmSections,
   WorkspaceCleanupConfirmStep
