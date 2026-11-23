@@ -2,10 +2,17 @@
 // it only while that Dispatch is open, so a finished one leaves an otherwise idle chat endable.
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { OrchestrationDb } from '../../runtime/orchestration/db/orchestration-db'
-import { formatOrcaSessionAddress } from '../../../shared/agent-session/identity/orca-session-address'
+import {
+  formatOrcaSessionAddress,
+  isOrcaSessionId,
+  type OrcaSessionId
+} from '../../../shared/agent-session/identity/orca-session-address'
 import { botChatEndObligations } from './bot-chat-end-obligations'
 
-const CHAT = '00000000-0000-4000-8000-0000000000c1'
+const CHAT_ID = '00000000-0000-4000-8000-0000000000c1'
+const CHAT: OrcaSessionId = isOrcaSessionId(CHAT_ID)
+  ? CHAT_ID
+  : expect.fail('not an Orca session id')
 const OTHER = '00000000-0000-4000-8000-0000000000c2'
 
 let db: OrchestrationDb
