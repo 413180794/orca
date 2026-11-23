@@ -64,6 +64,28 @@ function holdsOpenDispatch(
   )
 }
 
+/** Orchestration questions with no answer, read or not, on any Dispatch the chat was given, finished
+ *  or not: the ones it asked (a finished worker still asks) and the ones its workers asked of it. */
+function openQuestions(db: OrchestrationDb, ids: readonly string[], addresses: readonly string[]) {
+  const mine = `SELECT id FROM dispatch_contexts WHERE assignee_orca_session_id IN (${placeholders(ids)})
+    UNION SELECT id FROM dispatch_contexts WHERE assignee_handle IN (${placeholders(addresses)})`
+  const values = [...ids, ...addresses]
+  return {
+    askedBy: count(
+      db,
+      `SELECT COUNT(*) AS n FROM question_threads
+       WHERE dispatch_id IN (${mine}) AND status = 'pending'`,
+      values
+    ),
+    askedOf: count(
+      db,
+      `SELECT COUNT(*) AS n FROM messages m JOIN question_threads q ON q.message_id = m.id
+       WHERE m.to_handle IN (SELECT 'dispatch:' || id FROM (${mine})) AND q.status = 'pending'`,
+      values
+    )
+  }
+}
+
 function mailReasons(db: OrchestrationDb, ids: readonly string[]): BotChatEndReason[] {
   const addresses = ids.flatMap((id) => (isOrcaSessionId(id) ? [formatOrcaSessionAddress(id)] : []))
   const a = placeholders(addresses)
@@ -92,12 +114,13 @@ function mailReasons(db: OrchestrationDb, ids: readonly string[]): BotChatEndRea
          AND r.purpose IN ${OPEN_REQUEST_PURPOSES} AND o.message_id IS NULL`,
       addresses
     )
+  const questions = openQuestions(db, ids, addresses)
   // Unread ones are counted above; a read status asks nothing.
-  const asked = unanswered('to_handle', 'AND m.read = 1')
+  const asked = unanswered('to_handle', 'AND m.read = 1') + questions.askedOf
   if (asked > 0) {
     reasons.push({ kind: 'requests', count: asked })
   }
-  const waiting = unanswered('from_handle', "AND m.type <> 'heartbeat'")
+  const waiting = unanswered('from_handle', "AND m.type <> 'heartbeat'") + questions.askedBy
   if (waiting > 0) {
     reasons.push({ kind: 'questions', count: waiting })
   }

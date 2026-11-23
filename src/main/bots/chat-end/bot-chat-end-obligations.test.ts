@@ -63,4 +63,39 @@ describe('orchestration a side chat took part in', () => {
     })
     expect(owes()).toEqual([{ kind: 'ran-workers' }])
   })
+
+  it('keeps a finished worker chat while a question it asked, or one asked of it, waits, even once read', () => {
+    dispatch('d-mine', 'completed', { assignee_orca_session_id: CHAT })
+    dispatch('d-sub', 'completed', { assignee_orca_session_id: OTHER })
+    expect(owes()).toEqual([])
+
+    const question = (id: string, from: string, to: string, dispatchId: string) => {
+      db.insertMessage({
+        id,
+        threadId: id,
+        from,
+        to,
+        subject: 'Question',
+        body: '?',
+        type: 'question'
+      })
+      db.markAsRead([id])
+      db.db
+        .prepare(
+          `INSERT INTO question_threads (message_id, run_id, dispatch_id, asker_handle)
+           VALUES (?, 'run', ?, ?)`
+        )
+        .run(id, dispatchId, from)
+    }
+    // It asked after reporting (to its Run); a worker of its own asked it (to its Dispatch).
+    question('msg-asked-by', 'dispatch:d-mine', 'run:run', 'd-mine')
+    question('msg-asked-of', 'dispatch:d-sub', 'dispatch:d-mine', 'd-sub')
+    expect(owes()).toEqual([
+      { kind: 'requests', count: 1 },
+      { kind: 'questions', count: 1 }
+    ])
+
+    db.db.prepare("UPDATE question_threads SET status = 'answered'").run()
+    expect(owes()).toEqual([])
+  })
 })
