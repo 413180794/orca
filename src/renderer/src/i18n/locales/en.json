@@ -21952,7 +21952,7 @@
       },
       "automationResult": {
         "openRun": "Open run",
-        "notRead": "{{name}} hasn't seen this yet. It goes with your next text-only message.",
+        "notRead": "{{name}} hasn't been told about this yet. It goes with your next text-only message.",
         "read": "{{name}} was told about this with your next message.",
         "cleared": "Arrived before the chat was cleared. It won't go to {{name}}."
       },
