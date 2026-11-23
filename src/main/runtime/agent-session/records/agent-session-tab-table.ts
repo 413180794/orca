@@ -202,7 +202,7 @@ export abstract class AgentSessionRecordTabs extends AgentSessionRecordPublicati
     return showing
   }
 
-  /** A bot chat a person ended, until it is shown or held in the background again. */
+  /** A bot chat a person ended, until it is shown again. */
   isSessionEnded = (id: string): boolean =>
     (this.transactions.state.sessionTabs?.isEnded(id) ?? false) &&
     hasAgentSessionConversation(this.transactions.state, id)

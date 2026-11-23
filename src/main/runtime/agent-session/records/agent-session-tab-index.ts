@@ -68,11 +68,13 @@ export class AgentSessionTabTable {
     return tabId
   }
 
-  /** Take the tab away but keep the chat open. */
+  /** Take the tab away but keep the chat open. An ended chat stays ended: only a show reopens it,
+   *  so a late close of its earlier tab or background hold cannot restore its reach. */
   holdInBackground(sessionId: string): void {
     this.hide(sessionId)
-    this.ended.delete(sessionId)
-    this.background.add(sessionId)
+    if (!this.ended.has(sessionId)) {
+      this.background.add(sessionId)
+    }
   }
 
   /** Take the tab and the background hold away, and refuse new turns until it is shown again. */

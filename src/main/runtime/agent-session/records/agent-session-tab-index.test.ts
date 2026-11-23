@@ -6,7 +6,7 @@ import {
 } from './agent-session-tab-index'
 
 describe('AgentSessionTabTable ended chats', () => {
-  it('ends a background chat until it is shown or held again', () => {
+  it('ends a background chat until it is shown again', () => {
     const table = new AgentSessionTabTable([], ['s1', 's2'])
     table.end('s1')
     expect(table.isEnded('s1')).toBe(true)
@@ -15,11 +15,22 @@ describe('AgentSessionTabTable ended chats', () => {
 
     table.show('s1')
     expect(table.isEnded('s1')).toBe(false)
+  })
 
-    table.end('s2')
-    table.holdInBackground('s2')
-    expect(table.isEnded('s2')).toBe(false)
-    expect(table.isInBackground('s2')).toBe(true)
+  it('keeps an ended chat ended when a late legacy close holds it in the background', () => {
+    const table = new AgentSessionTabTable([['tab-a', 'a']], ['b'])
+    table.end('a')
+    table.end('b')
+    // A legacy `agentSession.close` captured before End lands its background write afterwards.
+    table.holdInBackground('a')
+    table.holdInBackground('b')
+    for (const id of ['a', 'b']) {
+      expect(table.isEnded(id)).toBe(true)
+      expect(table.isInBackground(id)).toBe(false)
+    }
+    const restored = agentSessionTabTableFromStored([], storedAgentSessionBackground(table))
+    expect(restored.isEnded('b')).toBe(true)
+    expect(restored.isInBackground('b')).toBe(false)
   })
 
   it('keeps ended chats across storage and clones', () => {
