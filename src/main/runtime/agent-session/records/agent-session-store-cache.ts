@@ -41,17 +41,18 @@ export function applyAgentSessionStoreCacheRows(
   }
   if (writes.sessionTabs !== null) {
     const prior = draft.sessionTabs
-    draft.sessionTabs = writes.sessionTabs.recorded
+    const next = writes.sessionTabs.recorded
       ? agentSessionTabTableFromStored(
           writes.sessionTabs.tabs.map(({ tabId, sessionId }) => [tabId, sessionId]),
           {
             ids: writes.sessionTabs.background ?? prior?.backgroundSessionIds() ?? [],
             backfilled:
-              writes.sessionTabs.backgroundBackfilled || (prior?.backgroundBackfilled ?? false),
-            ended: writes.sessionTabs.ended ?? prior?.endedSessionIds() ?? []
+              writes.sessionTabs.backgroundBackfilled || (prior?.backgroundBackfilled ?? false)
           }
         )
       : null
+    next?.carryEnded(prior, writes.sessionTabs.ended)
+    draft.sessionTabs = next
   }
 }
 

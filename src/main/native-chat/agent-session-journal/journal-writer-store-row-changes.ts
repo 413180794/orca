@@ -26,8 +26,8 @@ export type AgentSessionStoreRowWrites = {
     tabs: PersistedAgentSessionTab[]
     /** Open chats with no tab; null when unchanged. */
     background: string[] | null
-    /** Bot chats a person ended; null when unchanged. */
-    ended: string[] | null
+    /** Bot chats a person ended and reopened in this write; null when it changed none. */
+    ended: { add: string[]; remove: string[] } | null
     /** The one-time background backfill finished in this write. */
     backgroundBackfilled: boolean
   } | null
@@ -133,10 +133,7 @@ export function agentSessionStoreRowChanges(
             published.sessionTabs?.backgroundSessionIds(),
             draft.sessionTabs?.backgroundSessionIds()
           ),
-          ended: changedList(
-            published.sessionTabs?.endedSessionIds(),
-            draft.sessionTabs?.endedSessionIds()
-          ),
+          ended: draft.sessionTabs?.endedChangesSince(published.sessionTabs) ?? null,
           backgroundBackfilled:
             (draft.sessionTabs?.backgroundBackfilled ?? false) &&
             !(published.sessionTabs?.backgroundBackfilled ?? false)

@@ -57,3 +57,31 @@ describe('AgentSessionTabTable ended chats', () => {
     expect(restored.isEnded('c')).toBe(true)
   })
 })
+
+describe('AgentSessionTabTable ended chats across a write', () => {
+  it('shares them with its clone, and reports only what the clone changed', () => {
+    const published = new AgentSessionTabTable([['tab-x', 'x']], [], ['a', 'b'])
+    const unrelated = published.clone()
+    unrelated.show('y')
+    expect(unrelated.endedChangesSince(published)).toBeNull()
+
+    const draft = published.clone()
+    draft.end('x')
+    draft.show('a')
+    draft.end('c')
+    draft.show('c')
+    expect(draft.endedChangesSince(published)).toEqual({ add: ['x'], remove: ['a'] })
+    // The draft copied on its first change; the table it came from is as it was.
+    expect(published.endedSessionIds()).toEqual(['a', 'b'])
+    expect(draft.equals(published)).toBe(false)
+  })
+
+  it('compares whole sets against a table it was not cloned from', () => {
+    const fresh = new AgentSessionTabTable([], [], ['a'])
+    expect(fresh.endedChangesSince(null)).toEqual({ add: ['a'], remove: [] })
+    expect(fresh.endedChangesSince(new AgentSessionTabTable([], [], ['a', 'b']))).toEqual({
+      add: [],
+      remove: ['b']
+    })
+  })
+})

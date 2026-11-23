@@ -8,8 +8,14 @@ export class AgentSessionTabTable {
   /** Live chats with no tab (started in the background, or kept running past their tab's close);
    *  unlike a chat whose tab a person closed, they are still open. */
   private readonly background = new Set<string>()
-  /** Bot chats a person ended: no tab, not in the background, and no turn starts until shown again. */
-  private readonly ended = new Set<string>()
+  /** Bot chats a person ended: no tab, not in the background, and no turn starts until shown again.
+   *  Shared with the table this one was cloned from (or into) until either changes it, so a write
+   *  that ends or reopens nothing copies and compares none of them. */
+  private ended = new Set<string>()
+  private endedShared = false
+  /** The ended set this table was cloned from, and how its own differs: true added, false removed. */
+  private endedSource: ReadonlySet<string> | null = null
+  private readonly endedChanges = new Map<string, boolean>()
   /** TEMPORARY, with `backfillBackgroundSessions`: set once chats from before the list are added. */
   backgroundBackfilled = false
 
@@ -29,6 +35,25 @@ export class AgentSessionTabTable {
         continue
       }
       this.ended.add(sessionId)
+    }
+  }
+
+  private setEnded(sessionId: string, ended: boolean): void {
+    if (this.ended.has(sessionId) === ended) {
+      return
+    }
+    if (this.endedShared) {
+      this.ended = new Set(this.ended)
+      this.endedShared = false
+    }
+    if (ended) {
+      this.ended.add(sessionId)
+    } else {
+      this.ended.delete(sessionId)
+    }
+    // Each change flips membership, so a second one returns it to the source's.
+    if (!this.endedChanges.delete(sessionId)) {
+      this.endedChanges.set(sessionId, ended)
     }
   }
 
@@ -80,7 +105,7 @@ export class AgentSessionTabTable {
   /** Take the tab and the background hold away, and refuse new turns until it is shown again. */
   end(sessionId: string): void {
     this.hide(sessionId)
-    this.ended.add(sessionId)
+    this.setEnded(sessionId, true)
   }
 
   isInBackground(sessionId: string): boolean {
@@ -99,8 +124,51 @@ export class AgentSessionTabTable {
     return [...this.ended]
   }
 
+  /** The ended chats this table added and removed against `from`; null when it changed none. Only
+   *  those changes when this table was cloned from `from`, else the two sets compared whole. */
+  endedChangesSince(from: AgentSessionTabTable | null): { add: string[]; remove: string[] } | null {
+    if (from && this.endedSource === from.ended) {
+      if (this.endedChanges.size === 0) {
+        return null
+      }
+      const changes = [...this.endedChanges]
+      return {
+        add: changes.filter(([, ended]) => ended).map(([id]) => id),
+        remove: changes.filter(([, ended]) => !ended).map(([id]) => id)
+      }
+    }
+    const before: ReadonlySet<string> = from?.ended ?? new Set()
+    const add = [...this.ended].filter((id) => !before.has(id))
+    const remove = [...before].filter((id) => !this.ended.has(id))
+    return add.length + remove.length > 0 ? { add, remove } : null
+  }
+
+  /** Rebuilt from a write's rows: the ended chats of the table it replaces, with the write's changes. */
+  carryEnded(
+    from: AgentSessionTabTable | null,
+    changes: { add: readonly string[]; remove: readonly string[] } | null
+  ): void {
+    if (from) {
+      this.ended = from.ended
+      this.endedShared = true
+      from.endedShared = true
+    }
+    for (const id of changes?.add ?? []) {
+      this.setEnded(id, true)
+    }
+    for (const id of changes?.remove ?? []) {
+      this.setEnded(id, false)
+    }
+    this.endedSource = null
+    this.endedChanges.clear()
+  }
+
   clone(): AgentSessionTabTable {
-    const copy = new AgentSessionTabTable(this.sessionByTab, this.background, this.ended)
+    const copy = new AgentSessionTabTable(this.sessionByTab, this.background)
+    copy.ended = this.ended
+    copy.endedSource = this.ended
+    copy.endedShared = true
+    this.endedShared = true
     copy.backgroundBackfilled = this.backgroundBackfilled
     return copy
   }
@@ -111,7 +179,7 @@ export class AgentSessionTabTable {
     return (
       this.backgroundBackfilled === other.backgroundBackfilled &&
       sameMembers(this.background, other.background) &&
-      sameMembers(this.ended, other.ended) &&
+      (this.ended === other.ended || sameMembers(this.ended, other.ended)) &&
       left.length === right.length &&
       left.every(([tabId, sessionId], index) => {
         const [otherTabId, otherSessionId] = right[index]
@@ -126,7 +194,7 @@ export class AgentSessionTabTable {
       throw agentSessionRefusalError('agent_session_conflict', { reason: 'tabIdTaken' })
     }
     this.hide(sessionId)
-    this.ended.delete(sessionId)
+    this.setEnded(sessionId, false)
     this.sessionByTab.set(tabId, sessionId)
     this.tabBySession.set(sessionId, tabId)
   }
