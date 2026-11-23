@@ -36,6 +36,8 @@ export function botChatEndReasonLine(reason: BotChatEndReason): string {
       return plural(reason.count, 'question waiting for a reply', 'questions waiting for a reply')
     case 'ran-workers':
       return 'it ran workers'
+    case 'dispatch':
+      return 'a worker task still open'
     case 'automation':
       return `automation "${reason.name}" posts here`
     case 'automation-run':

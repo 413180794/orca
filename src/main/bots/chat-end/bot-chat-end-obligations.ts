@@ -35,23 +35,32 @@ function exists(db: OrchestrationDb, sql: string, values: readonly string[]): bo
   return db.db.prepare(sql).get(...values) !== undefined
 }
 
-/** Took part in orchestration: coordinated a Run, or created or worked a Dispatch. Not endable in PR 1. */
-function ranWorkers(db: OrchestrationDb, ids: readonly string[], addresses: readonly string[]) {
+/** Coordinated a Run: PR 1's permanent refusal, finished or not. */
+function coordinatedRun(db: OrchestrationDb, ids: readonly string[]): boolean {
+  const i = placeholders(ids)
+  return exists(db, `SELECT 1 FROM runs WHERE coordinator_orca_session_id IN (${i}) LIMIT 1`, ids)
+}
+
+const OPEN_DISPATCH = "status IN ('pending', 'dispatched')"
+
+/** Holds a Dispatch that is not final: one it created, or one it was given. A finished one owes nothing. */
+function holdsOpenDispatch(
+  db: OrchestrationDb,
+  ids: readonly string[],
+  addresses: readonly string[]
+) {
   const i = placeholders(ids)
   const a = placeholders(addresses)
+  const open = (column: string, values: readonly string[], list: string) =>
+    exists(
+      db,
+      `SELECT 1 FROM dispatch_contexts WHERE ${column} IN (${list}) AND ${OPEN_DISPATCH} LIMIT 1`,
+      values
+    )
   return (
-    exists(db, `SELECT 1 FROM runs WHERE coordinator_orca_session_id IN (${i}) LIMIT 1`, ids) ||
-    exists(
-      db,
-      `SELECT 1 FROM dispatch_contexts WHERE creator_orca_session_id IN (${i}) LIMIT 1`,
-      ids
-    ) ||
-    exists(
-      db,
-      `SELECT 1 FROM dispatch_contexts WHERE assignee_orca_session_id IN (${i}) LIMIT 1`,
-      ids
-    ) ||
-    exists(db, `SELECT 1 FROM dispatch_contexts WHERE assignee_handle IN (${a}) LIMIT 1`, addresses)
+    open('creator_orca_session_id', ids, i) ||
+    open('assignee_orca_session_id', ids, i) ||
+    open('assignee_handle', addresses, a)
   )
 }
 
@@ -59,8 +68,11 @@ function mailReasons(db: OrchestrationDb, ids: readonly string[]): BotChatEndRea
   const addresses = ids.flatMap((id) => (isOrcaSessionId(id) ? [formatOrcaSessionAddress(id)] : []))
   const a = placeholders(addresses)
   const reasons: BotChatEndReason[] = []
-  if (ranWorkers(db, ids, addresses)) {
+  if (coordinatedRun(db, ids)) {
     reasons.push({ kind: 'ran-workers' })
+  }
+  if (holdsOpenDispatch(db, ids, addresses)) {
+    reasons.push({ kind: 'dispatch' })
   }
   const unread = count(
     db,

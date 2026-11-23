@@ -29442,6 +29442,7 @@
         "questions_one": "{{count}} question waiting for a reply",
         "questions_other": "{{count}} questions waiting for a reply",
         "ranWorkers": "Ran workers",
+        "dispatch": "A worker task still open",
         "automation": "Automation “{{name}}” posts here",
         "automationRun": "Automation run still going",
         "usageContinue": "Auto-continue after usage limit",
