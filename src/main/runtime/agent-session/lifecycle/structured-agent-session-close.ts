@@ -177,7 +177,9 @@ export async function retireCapturedStructuredSessionSurface(
     })
     committed = true
   } catch (error) {
-    if (error === obsolete || !current()) {
+    // Only the check's own refusal proves nothing was written. Any other error may follow a durable
+    // commit (a lost ack), which itself changes the presentation, so it stays unknown either way.
+    if (error === obsolete) {
       return { committed: false }
     }
     failure = error
@@ -187,8 +189,9 @@ export async function retireCapturedStructuredSessionSurface(
       error
     })
   }
+  const unknown = failure === undefined ? {} : { error: failure }
   if (!current(committed)) {
-    return { committed: false }
+    return { committed: false, ...unknown }
   }
   const presentation = surface?.presentation
   try {
@@ -212,7 +215,7 @@ export async function retireCapturedStructuredSessionSurface(
       error
     })
   }
-  return { committed, ...(failure === undefined ? {} : { error: failure }) }
+  return { committed, ...unknown }
 }
 
 /** Phone closes and cancelled creates admit the captured surface before stopping its provider. */

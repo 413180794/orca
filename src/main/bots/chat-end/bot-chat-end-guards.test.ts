@@ -20,7 +20,7 @@ import {
 } from '../../../shared/agent-session/identity/orca-session-address'
 import { endBotChat } from './bot-chat-end'
 import { installBotChatEndGuards } from './bot-chat-end-guards'
-import { fenceChatEnd, resetChatEndFencesForTests } from './bot-chat-end-fence'
+import { fenceChatEnd, isChatEndUnresolved, resetChatEndFencesForTests } from './bot-chat-end-fence'
 import { resetBotChatEndOpsForTests } from './bot-chat-end-ops'
 
 const SIDE = COORDINATOR
@@ -96,6 +96,28 @@ describe('an end whose write has no answer', () => {
     expect(() =>
       db.insertMessage({ from: 'term_x', to: `orca_session_id:${SIDE}`, subject: 'Hi' })
     ).toThrow('This chat is being ended')
+  })
+
+  it('stays unknown when the write committed and only its answer was lost, though its tab went', async () => {
+    await backgroundBotChat(SIDE)
+    await host.setSessionTabVisibility(SIDE, true)
+    const write = host.setSessionTabVisibility.bind(host)
+    vi.spyOn(host, 'setSessionTabVisibility').mockImplementation(
+      async (sessionId, visible, tabId, options) => {
+        await write(sessionId, visible, tabId, options)
+        if (options?.end) {
+          // Durable, and the tab is gone, but the caller never hears so.
+          throw new Error('ack lost')
+        }
+      }
+    )
+
+    expect(await endIt()).toEqual({ outcome: 'unknown' })
+    expect(host.deps.store.isSessionEnded(SIDE)).toBe(true)
+    expect(host.getSessionTabId(SIDE)).toBeNull()
+    // The fence stays until restart, so the next end reconciles rather than acting on a guess.
+    expect(isChatEndUnresolved(SIDE)).toBe(true)
+    expect(await endIt()).toEqual({ outcome: 'unknown' })
   })
 })
 
