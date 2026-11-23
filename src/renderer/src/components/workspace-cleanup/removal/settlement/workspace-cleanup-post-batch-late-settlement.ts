@@ -31,6 +31,7 @@ type PostBatchLateSettlementState = {
   skippedAncestors: SkippedWorkspaceCleanupAncestor[]
   failedCandidates: WorkspaceCleanupCandidate[]
   failures: WorkspaceCleanupFailure[]
+  supersededTimeouts: WeakSet<WorkspaceCleanupFailure>
   provisionallyBlocked: Set<WorkspaceCleanupCandidate>
   removeCandidates: WorkspaceCleanupRemoveCandidates | null
   removalTimeoutMs: number
@@ -85,6 +86,7 @@ export function createPostBatchLateSettlementReporter({
     skippedAncestors: retainedSkippedAncestors,
     failedCandidates: retainedCandidates,
     failures: retainedSkippedAncestors.map((entry) => entry.failure),
+    supersededTimeouts: new WeakSet(),
     provisionallyBlocked: new Set(retainedCandidates),
     removeCandidates,
     removalTimeoutMs,
@@ -102,8 +104,11 @@ export function createPostBatchLateSettlementReporter({
           result,
           reportLateSettlement
         )
-        if (reconciled.result.removedIds.length > 0 || reconciled.result.failures.length > 0) {
-          reportResult(reconciled.result, reconciled.pendingSettlementFailures)
+        const failures = reconciled.result.failures.filter(
+          (failure) => !state.supersededTimeouts.has(failure)
+        )
+        if (reconciled.result.removedIds.length > 0 || failures.length > 0) {
+          reportResult({ ...reconciled.result, failures }, reconciled.pendingSettlementFailures)
         }
       })
       .catch((error: unknown) => {
@@ -221,7 +226,11 @@ async function reconcilePostBatchLateSettlement(
       lateFailures.push(timeoutFailure)
       pendingSettlementFailures.add(timeoutFailure)
       const tracker = trackWorkspaceCleanupLateSettlement(outcome.settlement, ancestor, () => {})
-      tracker.detach(reportLateSettlement)
+      tracker.detach((candidate, result) => {
+        // This result can reach Browse before an accumulated timeout from the same retry.
+        state.supersededTimeouts.add(timeoutFailure)
+        reportLateSettlement(candidate, result)
+      })
       continue
     }
     const result =

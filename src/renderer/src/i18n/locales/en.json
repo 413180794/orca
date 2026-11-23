@@ -23061,7 +23061,6 @@
           "all": "Select all {{count}}"
         },
         "runCard": {
-          "finishedTitle": "Deleted {{deleted}} of {{total}} workspaces",
           "title": "Deleting workspaces",
           "progress": "{{done}}/{{total}}",
           "dismiss": "Dismiss",
@@ -23071,6 +23070,7 @@
           "failedLine_one": "{{count}} couldn't be deleted.",
           "failedLine_other": "{{count}} couldn't be deleted.",
           "title": "Deleted {{deleted}} of {{total}} workspaces",
+          "singleTitle": "Deleted {{deleted}} of {{total}} workspace",
           "button": "Done"
         },
         "deleting": {

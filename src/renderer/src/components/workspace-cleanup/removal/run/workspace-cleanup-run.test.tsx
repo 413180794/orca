@@ -178,6 +178,7 @@ describe('workspace cleanup run', () => {
     )
     const reporter = createWorkspaceCleanupRunReporter(store().startRun(rows))
     const failureMessage = 'First parent workspace remained locked'
+    const lateFailures: WorkspaceCleanupRemoveResult['failures'] = []
     const expectFirstFailure = () => {
       expect(run().rows[0]).toMatchObject({
         status: 'failed',
@@ -197,6 +198,10 @@ describe('workspace cleanup run', () => {
       candidates: rows,
       removeCandidates: ([worktreeId]) => removals.get(worktreeId)!.promise,
       onProgress: () => {},
+      onLateResult: (result) => {
+        lateFailures.push(...result.failures)
+        reporter.onLateResult(result)
+      },
       removalTimeoutMs: 10,
       removalSettlementGraceMs: 5
     })
@@ -212,6 +217,11 @@ describe('workspace cleanup run', () => {
     complete(second)
     await vi.advanceTimersByTimeAsync(0)
     expectFirstFailure()
+    expect(
+      lateFailures
+        .filter((entry) => entry.worktreeId === first.worktreeId)
+        .map((entry) => entry.message)
+    ).toEqual([failureMessage])
     await vi.advanceTimersByTimeAsync(WORKSPACE_CLEANUP_PROVISIONAL_CEILING_MS)
     expectFirstFailure()
 

@@ -20661,7 +20661,6 @@
           "all": "Tout sélectionner ({{count}})"
         },
         "runCard": {
-          "finishedTitle": "{{deleted}} espace(s) de travail sur {{total}} supprimé(s)",
           "title": "Suppression des espaces de travail",
           "progress": "{{done}}/{{total}}",
           "dismiss": "Ignorer",
@@ -20672,6 +20671,7 @@
           "failedLine_many": "{{count}} n'ont pas pu être supprimés.",
           "failedLine_other": "{{count}} n'ont pas pu être supprimés.",
           "title": "{{deleted}} espace(s) de travail sur {{total}} supprimé(s)",
+          "singleTitle": "{{deleted}} espace de travail sur {{total}} supprimé",
           "button": "Terminé"
         },
         "deleting": {

@@ -113,11 +113,7 @@ export function startWorkspaceCleanupBackgroundRemoval({
   const reportFailures = (rowFailures: readonly WorkspaceCleanupFailure[]): void => {
     for (const failure of rowFailures) {
       failures.push(failure)
-      try {
-        onRowFailed?.(failure)
-      } catch (callbackError) {
-        console.error('Workspace cleanup row failure callback failed', callbackError)
-      }
+      notifyWorkspaceCleanupRowObserver(onRowFailed, failure)
     }
   }
 
@@ -167,13 +163,16 @@ export function startWorkspaceCleanupBackgroundRemoval({
 
   // Recompute ancestor skips from current blockers so late child success can unblock retries.
   const resettleSkippedAncestors = (): void => {
-    const { unblocked } = reclassifySkippedWorkspaceCleanupAncestors({
+    const { unblocked, updatedFailures } = reclassifySkippedWorkspaceCleanupAncestors({
       skippedAncestors,
       findBlockingDescendants,
       provisionallyBlocked,
       failedCandidates,
       failures
     })
+    for (const failure of updatedFailures) {
+      notifyWorkspaceCleanupRowObserver(onRowFailed, failure)
+    }
     for (const candidate of unblocked) {
       processedCount -= 1
       queue.push(candidate)

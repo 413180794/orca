@@ -31,6 +31,7 @@ import {
 } from './workspace-cleanup-host-label'
 import { getReviewTooltip } from './workspace-cleanup-review-labels'
 import type { WorkspaceCleanupFailure } from '@/store/slices/workspace-cleanup/workspace-cleanup-removal'
+import { WorkspaceCleanupRetryButton } from '../removal/workspace-cleanup-retry-button'
 
 export type WorkspaceCleanupDeletionPhase = 'deleting' | 'queued'
 
@@ -277,14 +278,7 @@ export const CandidateRow = React.memo(function CandidateRow({
             <div className="mt-1 flex min-h-5 items-center gap-1.5 text-xs text-destructive">
               <span>{failure.message}</span>
               {failure.canDeleteAnyway && onDeleteAnyway ? (
-                <Button
-                  variant="link"
-                  size="xs"
-                  className="h-auto px-1 text-destructive"
-                  onClick={() => onDeleteAnyway(candidate)}
-                >
-                  {t('components.workspace.cleanup.browse.deleteAnyway', 'Delete anyway')}
-                </Button>
+                <WorkspaceCleanupRetryButton candidate={candidate} onConfirm={onDeleteAnyway} />
               ) : null}
             </div>
           ) : null}

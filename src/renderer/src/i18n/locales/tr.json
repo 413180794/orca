@@ -20739,7 +20739,6 @@
           "all": "{{count}} öğenin tümünü seç"
         },
         "runCard": {
-          "finishedTitle": "{{total}} çalışma alanından {{deleted}} tanesi silindi",
           "title": "Çalışma alanları siliniyor",
           "progress": "{{done}}/{{total}}",
           "dismiss": "Kapat",
@@ -20749,6 +20748,7 @@
           "failedLine_one": "{{count}} tanesi silinemedi.",
           "failedLine_other": "{{count}} tanesi silinemedi.",
           "title": "{{total}} çalışma alanından {{deleted}} tanesi silindi",
+          "singleTitle": "{{total}} çalışma alanından {{deleted}} tanesi silindi",
           "button": "Bitti"
         },
         "deleting": {

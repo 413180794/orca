@@ -12,7 +12,10 @@ import {
   useWorkspaceCleanupRunStore,
   type WorkspaceCleanupRun
 } from './workspace-cleanup-run-store'
-import { openWorkspaceCleanupRunView } from './workspace-cleanup-run-view'
+import {
+  getWorkspaceCleanupRunFinishedTitle,
+  openWorkspaceCleanupRunView
+} from './workspace-cleanup-run-view'
 
 /** Bottom-right card for a delete that outlives its dialog; stays until dismissed once finished. */
 export function WorkspaceCleanupRunCard(): React.JSX.Element | null {
@@ -36,15 +39,7 @@ export function WorkspaceCleanupRunCardContent({
   const t = useTranslate()
   const counts = getWorkspaceCleanupRunCounts(run)
   const running = getWorkspaceCleanupRunPhase(run) === 'running'
-  const finishedTitle = t(
-    'components.workspace.cleanup.runCard.finishedTitle',
-    'Deleted {{deleted}} of {{total}} workspaces',
-    {
-      deleted: counts.deleted,
-      total: counts.total,
-      defaultValue_one: 'Deleted {{deleted}} of {{total}} workspace'
-    }
-  )
+  const finishedTitle = getWorkspaceCleanupRunFinishedTitle(t, counts)
   const runningTitle = t('components.workspace.cleanup.runCard.title', 'Deleting workspaces')
   return (
     <Card size="notice" role="group" aria-label={runningTitle}>

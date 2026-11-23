@@ -25,6 +25,8 @@ import {
   type WorkspaceCleanupAgentStopRequest
 } from './agent-consent/use-workspace-cleanup-agent-stop-gate'
 
+type ConfirmationCandidates = readonly WorkspaceCleanupCandidate[]
+
 export type WorkspaceCleanupRemovalController = {
   confirming: boolean
   confirmCandidates: WorkspaceCleanupCandidate[]
@@ -38,7 +40,7 @@ export type WorkspaceCleanupRemovalController = {
   resetRowFailures: () => void
   resetForReopen: () => void
   openConfirmRemove: (candidates: readonly WorkspaceCleanupCandidate[]) => void
-  confirmRemove: () => void
+  confirmRemove: (candidates?: ConfirmationCandidates) => void
   confirmUnverifiedRemoval: (candidate: WorkspaceCleanupCandidate) => void
   cancelConfirmRemove: () => void
   backToList: () => void
@@ -156,12 +158,12 @@ export function useWorkspaceCleanupRemoval({
     setDeletionPhaseByIdentity({})
   }, [])
 
-  const confirmRemove = useCallback(() => {
-    if (confirmCandidates.length === 0 || removalInFlightRef.current) {
+  const confirmRemove = (candidates: ConfirmationCandidates = confirmCandidates): void => {
+    if (candidates.length === 0 || removalInFlightRef.current) {
       return
     }
     const filteredCandidates = filterWorkspaceCleanupRemovalCandidates(
-      confirmCandidates,
+      candidates,
       useAppStore.getState().deleteStateByWorktreeId
     )
     if (filteredCandidates.length === 0) {
@@ -172,6 +174,7 @@ export function useWorkspaceCleanupRemoval({
     }
     const removableCandidates = approveAgentStops(filteredCandidates, null)
     if (!removableCandidates) {
+      setConfirmCandidates(filteredCandidates)
       return
     }
     removalInFlightRef.current = true
@@ -276,27 +279,16 @@ export function useWorkspaceCleanupRemoval({
     } catch {
       handleRemovalError()
     }
-  }, [
-    approveAgentStops,
-    clearAgentStopRequest,
-    clearQueuedDeleteState,
-    clearWorktreeDeleteState,
-    confirmCandidates,
-    markWorktreesQueuedForDeletion,
-    mountedRef,
-    onDeselect,
-    removeCandidates,
-    settle
-  ])
+  }
 
   const agentStopRequest = agentStopGate.request
-  const confirmStopAgents = useCallback(() => {
+  const confirmStopAgents = (): void => {
     if (agentStopRequest?.unverifiedCandidate) {
       confirmUnverifiedRemoval(agentStopRequest.unverifiedCandidate)
     } else {
       confirmRemove()
     }
-  }, [agentStopRequest, confirmRemove, confirmUnverifiedRemoval])
+  }
 
   return {
     confirming,

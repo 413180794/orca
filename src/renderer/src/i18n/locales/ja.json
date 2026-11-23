@@ -20974,7 +20974,6 @@
           "all": "{{count}} 件をすべて選択"
         },
         "runCard": {
-          "finishedTitle": "{{total}} 件中 {{deleted}} 件のワークスペースを削除しました",
           "title": "ワークスペースを削除中",
           "progress": "{{done}}/{{total}}",
           "dismiss": "閉じる",
@@ -20983,6 +20982,7 @@
         "done": {
           "failedLine_other": "{{count}} 件を削除できませんでした。",
           "title": "{{total}} 件中 {{deleted}} 件のワークスペースを削除しました",
+          "singleTitle": "{{total}} 件中 {{deleted}} 件のワークスペースを削除しました",
           "button": "完了"
         },
         "deleting": {

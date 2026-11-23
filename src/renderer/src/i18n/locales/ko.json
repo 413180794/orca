@@ -21972,7 +21972,6 @@
           "all": "{{count}}개 모두 선택"
         },
         "runCard": {
-          "finishedTitle": "워크스페이스 {{total}}개 중 {{deleted}}개 삭제됨",
           "title": "워크스페이스 삭제 중",
           "progress": "{{done}}/{{total}}",
           "dismiss": "닫기",
@@ -21981,6 +21980,7 @@
         "done": {
           "failedLine_other": "{{count}}개를 삭제하지 못했습니다.",
           "title": "워크스페이스 {{total}}개 중 {{deleted}}개 삭제됨",
+          "singleTitle": "워크스페이스 {{total}}개 중 {{deleted}}개 삭제됨",
           "button": "완료"
         },
         "deleting": {

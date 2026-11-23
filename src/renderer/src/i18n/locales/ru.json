@@ -21305,7 +21305,6 @@
           "all": "Выбрать все ({{count}})"
         },
         "runCard": {
-          "finishedTitle": "Удалено рабочих пространств: {{deleted}} из {{total}}",
           "title": "Удаление рабочих пространств",
           "progress": "{{done}}/{{total}}",
           "dismiss": "Закрыть",
@@ -21317,6 +21316,7 @@
           "failedLine_many": "Не удалось удалить: {{count}}.",
           "failedLine_other": "Не удалось удалить: {{count}}.",
           "title": "Удалено рабочих пространств: {{deleted}} из {{total}}",
+          "singleTitle": "{{deleted}} из {{total}} рабочего пространства удалено",
           "button": "Готово"
         },
         "deleting": {

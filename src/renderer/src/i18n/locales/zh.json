@@ -21884,7 +21884,6 @@
           "all": "全选 {{count}} 个"
         },
         "runCard": {
-          "finishedTitle": "已删除 {{deleted}}/{{total}} 个工作区",
           "title": "正在删除工作区",
           "progress": "{{done}}/{{total}}",
           "dismiss": "关闭",
@@ -21893,6 +21892,7 @@
         "done": {
           "failedLine_other": "{{count}} 个无法删除。",
           "title": "已删除 {{deleted}}/{{total}} 个工作区",
+          "singleTitle": "已删除 {{deleted}}/{{total}} 个工作区",
           "button": "完成"
         },
         "deleting": {

@@ -20381,7 +20381,6 @@
           "all": "Seleccionar los {{count}}"
         },
         "runCard": {
-          "finishedTitle": "{{deleted}} de {{total}} espacios de trabajo eliminados",
           "title": "Eliminando espacios de trabajo",
           "progress": "{{done}}/{{total}}",
           "dismiss": "Descartar",
@@ -20392,6 +20391,7 @@
           "failedLine_many": "No se pudieron eliminar {{count}}.",
           "failedLine_other": "No se pudieron eliminar {{count}}.",
           "title": "{{deleted}} de {{total}} espacios de trabajo eliminados",
+          "singleTitle": "{{deleted}} de {{total}} espacio de trabajo eliminado",
           "button": "Listo"
         },
         "deleting": {

@@ -20615,7 +20615,6 @@
           "all": "Alle {{count}} auswählen"
         },
         "runCard": {
-          "finishedTitle": "{{deleted}} von {{total}} Arbeitsbereichen gelöscht",
           "title": "Arbeitsbereiche werden gelöscht",
           "progress": "{{done}}/{{total}}",
           "dismiss": "Schließen",
@@ -20625,6 +20624,7 @@
           "failedLine_one": "{{count}} konnte nicht gelöscht werden.",
           "failedLine_other": "{{count}} konnten nicht gelöscht werden.",
           "title": "{{deleted}} von {{total}} Arbeitsbereichen gelöscht",
+          "singleTitle": "{{deleted}} von {{total}} Arbeitsbereich gelöscht",
           "button": "Fertig"
         },
         "deleting": {

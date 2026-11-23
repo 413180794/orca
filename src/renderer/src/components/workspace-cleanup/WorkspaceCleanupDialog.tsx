@@ -18,6 +18,7 @@ import { useWorkspaceCleanupRunStore } from './removal/run/workspace-cleanup-run
 import {
   WorkspaceCleanupGroupCards,
   WORKSPACE_CLEANUP_GROUP_PANEL_ID,
+  focusWorkspaceCleanupGroupTab,
   getWorkspaceCleanupGroupTabId
 } from './dialog/workspace-cleanup-group-cards'
 import { WorkspaceCleanupSelectAllBar } from './dialog/workspace-cleanup-select-all-bar'
@@ -53,6 +54,7 @@ import { useWorkspaceCleanupIgnore } from './browse/use-workspace-cleanup-ignore
 import { openWorkspaceCleanupForgetLocally } from './removal/workspace-cleanup-forget-locally-button'
 import {
   formatWithheldSelectionNotice,
+  getLiveDeletableCandidates,
   toggleSetMember
 } from './browse/workspace-cleanup-selection-model'
 
@@ -259,15 +261,32 @@ function WorkspaceCleanupDialogContent({
   })
 
   const openConfirmRemove = removal.openConfirmRemove
+  const liveConfirmCandidates = useMemo(
+    () =>
+      getLiveDeletableCandidates(
+        facetRows.allRows,
+        removal.confirming ? removal.confirmCandidates : [],
+        deletingIdentities
+      ),
+    [deletingIdentities, facetRows.allRows, removal.confirmCandidates, removal.confirming]
+  )
   const handleRemoveRow = useCallback(
     (candidate: WorkspaceCleanupCandidate) => {
       if (removalInFlightRef.current) {
         return
       }
+      const liveCandidates = getLiveDeletableCandidates(
+        facetRows.allRows,
+        [candidate],
+        deletingIdentities
+      )
+      if (liveCandidates.length === 0) {
+        return
+      }
       setSelectedIds(new Set([getWorkspaceCleanupCandidateIdentity(candidate)]))
-      openConfirmRemove([candidate])
+      openConfirmRemove(liveCandidates)
     },
-    [openConfirmRemove, removalInFlightRef, setSelectedIds]
+    [deletingIdentities, facetRows.allRows, openConfirmRemove, removalInFlightRef, setSelectedIds]
   )
   const handleViewCandidate = useCallback(
     (candidate: WorkspaceCleanupCandidate) => {
@@ -303,11 +322,14 @@ function WorkspaceCleanupDialogContent({
           />
         ) : removal.confirming ? (
           <WorkspaceCleanupConfirmStep
-            candidates={removal.confirmCandidates}
+            candidates={liveConfirmCandidates}
             now={facetNow}
-            onBack={removal.backToList}
+            onBack={() => {
+              removal.backToList()
+              focusWorkspaceCleanupGroupTab(activeGroup)
+            }}
             onClose={closeModal}
-            onConfirm={removal.confirmRemove}
+            onConfirm={() => removal.confirmRemove(liveConfirmCandidates)}
           />
         ) : (
           <>

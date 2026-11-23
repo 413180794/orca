@@ -51,3 +51,13 @@ export function getSelectedDeletableCandidates(
         !deletingIdentities.has(getWorkspaceCleanupCandidateIdentity(candidate))
     )
 }
+
+/** Re-resolves candidates against the live rows so stale snapshots never reach a delete. */
+export function getLiveDeletableCandidates(
+  rows: readonly { identity: string; candidate: WorkspaceCleanupCandidate }[],
+  candidates: readonly WorkspaceCleanupCandidate[],
+  deletingIdentities: ReadonlySet<string>
+): WorkspaceCleanupCandidate[] {
+  const selectedIds = new Set(candidates.map(getWorkspaceCleanupCandidateIdentity))
+  return getSelectedDeletableCandidates(rows, selectedIds, deletingIdentities)
+}

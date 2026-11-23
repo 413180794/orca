@@ -22206,7 +22206,6 @@
           "all": "Selecionar todos os {{count}}"
         },
         "runCard": {
-          "finishedTitle": "{{deleted}} de {{total}} espaços de trabalho excluídos",
           "title": "Excluindo espaços de trabalho",
           "progress": "{{done}}/{{total}}",
           "dismiss": "Dispensar",
@@ -22217,6 +22216,7 @@
           "failedLine_many": "Não foi possível excluir {{count}}.",
           "failedLine_other": "Não foi possível excluir {{count}}.",
           "title": "{{deleted}} de {{total}} espaços de trabalho excluídos",
+          "singleTitle": "{{deleted}} de {{total}} espaço de trabalho excluído",
           "button": "Concluído"
         },
         "deleting": {
