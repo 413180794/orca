@@ -17,9 +17,23 @@ const OTHER = '00000000-0000-4000-8000-0000000000c2'
 
 let db: OrchestrationDb
 
-function owes(): ReturnType<typeof botChatEndObligations> {
+function owes(
+  activeRuns: { automationId: string; chatSessionId: string | null }[] = []
+): ReturnType<typeof botChatEndObligations> {
+  const automations = [
+    {
+      id: 'auto-1',
+      name: 'Digest',
+      bot: { botId: 'bot-1', runsIn: 'new' as const, resultsTo: 'chat' as const }
+    }
+  ]
   return botChatEndObligations(
-    { db, automations: () => [], runsOf: () => new Map(), deliveryPending: () => false },
+    {
+      db,
+      automations: () => automations,
+      activeRuns: () => activeRuns,
+      deliveryPending: () => false
+    },
     'bot-1',
     [CHAT]
   )
@@ -104,5 +118,13 @@ describe('orchestration a side chat took part in', () => {
 
     db.db.prepare("UPDATE question_threads SET status = 'answered'").run()
     expect(owes()).toEqual([])
+  })
+
+  it("keeps it while one of the bot's automation runs into it is still going, from the active runs alone", () => {
+    expect(owes([{ automationId: 'auto-1', chatSessionId: CHAT }])).toEqual([
+      { kind: 'automation-run' }
+    ])
+    expect(owes([{ automationId: 'auto-1', chatSessionId: OTHER }])).toEqual([])
+    expect(owes([{ automationId: 'someone-else', chatSessionId: CHAT }])).toEqual([])
   })
 })

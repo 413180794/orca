@@ -1,6 +1,5 @@
 // What a bot side chat still owes, read synchronously from keyed rows of this chat alone, so the same
 // check can run in the end's fence tick and again in its commit. A read that fails counts as owed.
-import { isFinalAutomationRunStatus } from '../../../shared/automations/history/automation-run'
 import {
   formatOrcaSessionAddress,
   isOrcaSessionId
@@ -14,8 +13,8 @@ export type BotChatEndObligationSources = {
   db: OrchestrationDb
   /** The bot's automations, read from memory. */
   automations: () => readonly Pick<Automation, 'id' | 'name' | 'bot'>[]
-  /** Retained runs of the named automations; final runs may be pruned, others never are. */
-  runsOf: (automationIds: readonly string[]) => ReadonlyMap<string, readonly AutomationRun[]>
+  /** Every run not yet final (retention never prunes those), read without the run history. */
+  activeRuns: () => readonly Pick<AutomationRun, 'automationId' | 'chatSessionId'>[]
   /** A connector delivery is being sent to, or waits on, this session's turn. */
   deliveryPending: (sessionId: string) => boolean
 }
@@ -139,15 +138,15 @@ function automationReasons(
   const reasons: BotChatEndReason[] = own
     .filter((automation) => ids.includes(automation.bot?.chat?.sessionId ?? ''))
     .map((automation) => ({ kind: 'automation', name: automation.name }))
-  const runs = sources.runsOf(own.map((automation) => automation.id))
-  const going = [...runs.values()].some((list) =>
-    list.some(
+  const ownIds = new Set(own.map((automation) => automation.id))
+  const going = sources
+    .activeRuns()
+    .some(
       (run) =>
-        !isFinalAutomationRunStatus(run.status) &&
+        ownIds.has(run.automationId) &&
         run.chatSessionId !== null &&
         ids.includes(run.chatSessionId)
     )
-  )
   return going ? [...reasons, { kind: 'automation-run' }] : reasons
 }
 

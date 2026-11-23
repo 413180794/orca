@@ -86,7 +86,7 @@ export async function runtimeBotChatEndDeps(
         {
           db: runtime.getOrchestrationDb(),
           automations: () => store().listAutomations?.() ?? [],
-          runsOf: (ids) => store().listAutomationRunsByAutomation?.(ids) ?? new Map(),
+          activeRuns: () => store().listActiveAutomationRuns?.() ?? [],
           deliveryPending: (id) => seam()?.deliveredTurn(id) ?? false
         },
         bot.id,

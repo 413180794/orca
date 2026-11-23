@@ -1,4 +1,6 @@
 import { splitBotsByOlderBuildSupport, type Bot } from '../../../../shared/bot-types'
+import { listActiveAutomationRuns } from '../../scheduling-automations/automation-active-runs'
+import type { AutomationRun } from '../../../../shared/automations/history/automation-run'
 import {
   isImmutableBotSnapshot,
   markImmutableBotSnapshot,
@@ -68,6 +70,11 @@ export class BotPersistence {
 
   constructor(runtime: BotRuntime, scheduling: WriteSchedulingOperations) {
     this[botPersistenceContext] = { runtime, scheduling, cached: null }
+  }
+
+  /** Automation runs not yet final, for what a bot's chat owes: cached until the run history changes. */
+  listActiveAutomationRuns(): readonly AutomationRun[] {
+    return listActiveAutomationRuns(this[botPersistenceContext].runtime.state)
   }
 
   getBots(): Bot[] {
