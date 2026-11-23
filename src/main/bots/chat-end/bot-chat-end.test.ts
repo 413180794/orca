@@ -179,6 +179,26 @@ describe('when the idle release does not stop the agent', () => {
     expect(host.deps.store.isSessionInBackground(SIDE)).toBe(true)
     expect(host.deps.store.isSessionEnded(SIDE)).toBe(false)
   })
+
+  it('keeps a chat with no agent loaded that still owes work, at the fence tick and at the write', async () => {
+    await openBotChat(SIDE, 'background')
+    // A delivery, acquire abort, provider child work or ingress still keyed to the unloaded chat.
+    let owing = true
+    vi.spyOn(host.reads, 'owesUnloadedWork').mockImplementation((id) => owing && id === SIDE)
+    expect(await end()).toEqual({ outcome: 'kept', reasons: [{ kind: 'stopping' }] })
+    expect(host.hasSession(SIDE)).toBe(false)
+
+    // Admitted at the tick; the work arrives while the fenced reads run, before the write's check.
+    owing = false
+    const cutOf = host.restartResume.cutOf.bind(host.restartResume)
+    vi.spyOn(host.restartResume, 'cutOf').mockImplementationOnce(async (id) => {
+      owing = true
+      return cutOf(id)
+    })
+    expect(await end()).toEqual({ outcome: 'kept', reasons: [{ kind: 'stopping' }] })
+    expect(host.deps.store.isSessionInBackground(SIDE)).toBe(true)
+    expect(host.deps.store.isSessionEnded(SIDE)).toBe(false)
+  })
 })
 
 describe('every way a turn can start in an ended chat', () => {

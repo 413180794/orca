@@ -50,9 +50,10 @@ function owed(deps: BotChatEndDeps, lineage: readonly string[]): BotChatEndReaso
   }
 }
 
-/** No session open, and its claim released with proof the agent exited or never started. */
+/** No session open and no work owed without one (the automatic close's resting read), and its
+ *  claim released with proof the agent exited or never started. */
 function atRest(host: StructuredAgentSessionHost, target: BotChatEndTarget): boolean {
-  if (target.lineage.some((id) => host.hasSession(id))) {
+  if (target.lineage.some((id) => host.hasSession(id) || host.reads.owesUnloadedWork(id))) {
     return false
   }
   const record = host.deps.store.getConversation(target.live)
