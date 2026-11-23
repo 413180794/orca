@@ -2499,9 +2499,9 @@
       },
       "automationResult": {
         "cleared": "Arrived before the chat was cleared. It won't go to {{name}}.",
-        "notRead": "{{name}} will see this when you send your next message.",
+        "notRead": "{{name}} hasn't seen this yet. It goes with your next text-only message.",
         "openRun": "Open run",
-        "read": "{{name}} saw this when you sent your next message."
+        "read": "{{name}} was told about this with your next message."
       },
       "automationRun": {
         "accessibleName": "Automation run. {{label}}: {{name}}. {{reason}}.",

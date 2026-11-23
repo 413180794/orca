@@ -191,7 +191,7 @@ export function projectStructuredAgentSessionMessageRows(
       submission
     ])
   )
-  const marks = automationResultMarks(visibleItems)
+  const marks = automationResultMarks(visibleItems, submissionsByItemId)
   const delivered: NativeChatMessage[] = []
   const held: NativeChatMessage[] = []
   const shownStopped = new Set<string>()
