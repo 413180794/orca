@@ -95,3 +95,11 @@ export function lookUpBotChatEndTarget(
   }
   return { kind: 'found', target }
 }
+
+/** One name per chat for an op's identity: its lineage root, so `chat:<id>`, a /clear successor and
+ *  the root itself are the same target. An id this host can't resolve stays as given. */
+export function canonicalBotChatId(chatId: string): string {
+  const id = chatId.replace(/^chat:/, '')
+  const records = readAgentSessionRecordStore()
+  return records && isOrcaSessionId(id) ? createCanonicalOrcaSessionResolver(records)(id) : id
+}

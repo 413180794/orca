@@ -11,7 +11,10 @@ import { requireStructuredHost } from '../../../bots/bot-chat-session'
 import { endBotChat, type BotChatEndDeps } from '../../../bots/chat-end/bot-chat-end'
 import { botChatEndObligations } from '../../../bots/chat-end/bot-chat-end-obligations'
 import { runBotChatEndOp } from '../../../bots/chat-end/bot-chat-end-ops'
-import { lookUpBotChatEndTarget } from '../../../bots/chat-end/bot-chat-end-target'
+import {
+  canonicalBotChatId,
+  lookUpBotChatEndTarget
+} from '../../../bots/chat-end/bot-chat-end-target'
 import { isAgentRpcCaller } from '../callers/rpc-caller-identity'
 import { defineMethod, type RpcContext } from '../core'
 import { namedOrCallerBot } from './bots-caller-bot'
@@ -113,17 +116,22 @@ export const BOT_END_CHAT_METHOD = defineMethod({
   handler: async (params, context): Promise<BotChatEndResult> => {
     context.runtime.bots.assertEnabled()
     const { bot, caller, callerBot } = namedOrCallerBot(params, context)
+    // Every request, a repeat included, answers to who asks now; a repeat never borrows a policy.
+    const refusal = await callerRefusal(params, context, bot, caller, callerBot)
+    if (refusal) {
+      return { outcome: 'refused', refusal }
+    }
+    // The op is this caller (all of its identity) ending this chat (by lineage root) this way.
     const key = JSON.stringify([
-      context.caller?.kind ?? null,
-      caller ?? null,
+      context.caller ?? null,
+      caller === undefined ? null : canonicalBotChatId(caller),
       bot.id,
-      params.chat,
+      canonicalBotChatId(params.chat),
       params.intent,
       params.showing ?? null
     ])
-    return runBotChatEndOp({ opId: params.opId, key, botId: bot.id, now: Date.now }, async () => {
-      const refusal = await callerRefusal(params, context, bot, caller, callerBot)
-      return refusal ? { outcome: 'refused', refusal } : endChatFor(params, context, bot, caller)
-    })
+    return runBotChatEndOp({ opId: params.opId, key, botId: bot.id, now: Date.now }, () =>
+      endChatFor(params, context, bot, caller)
+    )
   }
 })

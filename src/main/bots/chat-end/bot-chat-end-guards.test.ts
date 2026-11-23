@@ -169,6 +169,35 @@ describe('who may end a bot chat', () => {
     ).toEqual({ outcome: 'refused', refusal: { kind: 'not-owner' } })
   })
 
+  it("answers a repeat of a person's op to that device's agent with its own refusal", async () => {
+    await backgroundBotChat(SIDE)
+    const opId = crypto.randomUUID()
+    const device = { kind: 'paired-device', deviceId: 'phone' } as const
+
+    expect(await ask({ opId, chat: SIDE, intent: 'end' }, device)).toEqual({
+      outcome: 'ended',
+      title: null
+    })
+    expect(await ask({ opId, chat: SIDE, intent: 'end' }, { ...device, agent: true })).toEqual({
+      outcome: 'refused',
+      refusal: { kind: 'not-owner' }
+    })
+  })
+
+  it('treats chat:<id> and <id> as the same op', async () => {
+    await backgroundBotChat(SIDE)
+    const opId = crypto.randomUUID()
+
+    expect(await ask({ opId, chat: SIDE, intent: 'end' }, { kind: 'desktop' })).toEqual({
+      outcome: 'ended',
+      title: null
+    })
+    expect(await ask({ opId, chat: `chat:${SIDE}`, intent: 'end' }, { kind: 'desktop' })).toEqual({
+      outcome: 'ended',
+      title: null
+    })
+  })
+
   it("lets the owner's terminal end it, and answers a repeat of the op the same way", async () => {
     await backgroundBotChat(SIDE)
     const params = BOT_END_CHAT_METHOD.params.parse({
