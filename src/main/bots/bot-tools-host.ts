@@ -6,7 +6,6 @@ import { mkdir } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { runProcess } from '@orca/process-host'
-import { z } from 'zod'
 import type {
   BotInheritedTool,
   BotToolProblem,
@@ -23,10 +22,11 @@ import {
   readClaudeMirror
 } from './bot-tools-claude'
 import {
-  codexBotToolsThreadConfig,
+  codexTakenToolProblem,
   codexTakenToolProblems,
   codexToolProblems,
   readCodexInheritedToolNames,
+  codexThread,
   readCodexStdioToolNames
 } from './bot-tools-codex'
 import {
@@ -39,7 +39,7 @@ import { resolveBotToolInput } from './bot-tool-details'
 import { claudeBotToolProblems } from './bot-tools-claude-check'
 import { acpLaunchSpecFor } from '../acp/launch/acp-launch-registry'
 import { redactBotToolProblems } from './bot-tool-redaction'
-import { cliWithLaunchTools, withRelayProblems, type BotLaunchTools } from './bot-launch-tools'
+import { cliWithLaunchTools, withRelayProblems } from './bot-launch-tools'
 import type { BotAgent } from '../../shared/bot-types'
 import { readBotToolOAuth, withSavedBotToolHeaders } from './bot-tool-credentials'
 
@@ -70,8 +70,6 @@ export type BotToolsHome =
 
 export const hasBotToolsCli = (home: BotToolsHome): home is BotToolsCli =>
   home.agent === 'claude' || home.agent === 'codex'
-
-const StartedThread = z.object({ thread: z.object({ id: z.string() }) })
 
 const CLI_TIMEOUT_MS = 60_000
 
@@ -109,25 +107,6 @@ export function codexSession<T>(
   ).catch(() => {
     throw new BotFailureError('toolCodexCheckFailed')
   })
-}
-
-/** A thread in the bot folder with the bot's own servers, as its turns start one. */
-export async function codexThread(
-  rpc: Parameters<Parameters<typeof runCodexAppServerSession>[1]>[0],
-  cli: BotToolsCli,
-  tools: BotLaunchTools,
-  ownerStdioNames: readonly string[]
-): Promise<string> {
-  const started = await rpc.request('thread/start', {
-    cwd: cli.folder,
-    ephemeral: true,
-    config: codexBotToolsThreadConfig(tools, ownerStdioNames)
-  })
-  const id = StartedThread.safeParse(started).data?.thread.id
-  if (!id) {
-    throw new BotFailureError('toolCodexNoThread')
-  }
-  return id
 }
 
 /** The tools the bot gets from its owner's own Claude Code or Codex config; none read for another agent. */
@@ -240,7 +219,14 @@ export async function botToolProblems(
     launch.cli,
     CLI_TIMEOUT_MS,
     async (rpc) => {
-      const threadId = await codexThread(rpc, launch.cli, launch.tools, ownerStdioNames)
+      const { threadId, leftOut } = await codexThread(
+        rpc,
+        launch.cli,
+        launch.tools,
+        ownerStdioNames
+      )
+      // The status under a left-out name is the owner's own server's, not the bot's.
+      const checked = names.filter((name) => !leftOut.includes(name))
       const deadline = Date.now() + 30_000
       let problems: Map<string, BotToolProblem>
       do {
@@ -249,7 +235,7 @@ export async function botToolProblems(
           threadId,
           detail: 'toolsAndAuthOnly'
         })
-        problems = codexToolProblems(answer, names)
+        problems = codexToolProblems(answer, checked)
         if (![...problems.values()].some((problem) => problem.kind === 'unconfirmed')) {
           break
         }
@@ -257,6 +243,7 @@ export async function botToolProblems(
       } while (Date.now() < deadline)
       return {
         ...withRelayProblems(cli, servers, redactBotToolProblems(problems, servers)),
+        ...Object.fromEntries(leftOut.map((name) => [name, codexTakenToolProblem(name)])),
         ...taken
       }
     },

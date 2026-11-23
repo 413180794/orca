@@ -23,6 +23,7 @@ import { openCodexThread } from '../threads/codex-structured-thread-open'
 import { catchUpCodexThread } from '../threads/codex-structured-thread-catch-up'
 import { withCodexSkillRootsThreadConfig } from '../launch/codex-structured-skill-roots'
 import { codexReadOnlyMcpOff } from '../prompts/codex-structured-read-only'
+import { withCodexBotToolsFitted } from '../launch/codex-bot-tools-fit'
 import { NATIVE_CHAT_SCRATCH_DIR_ENV } from '../../../native-chat/conversation-files/native-chat-visuals-delivery'
 import {
   restoredCodexSessionOptions,
@@ -99,14 +100,17 @@ export async function openCodexStructuredSession(
     ? await waitForPromiseWithSignal(codexReadOnlyMcpOff(connection, launch.cwd), openInput.signal)
     : null
   current()
+  const log = { sessionId, ...(deps.logger ? { logger: deps.logger } : {}) }
+  const fitted = await waitForPromiseWithSignal(
+    withCodexBotToolsFitted(connection, launch, log),
+    openInput.signal
+  )
+  current()
   const threadLaunch = await waitForPromiseWithSignal(
     withCodexSkillRootsThreadConfig(
       connection,
-      mcpOff ? { ...launch, threadConfig: { ...launch.threadConfig, ...mcpOff } } : launch,
-      {
-        sessionId,
-        ...(deps.logger ? { logger: deps.logger } : {})
-      }
+      mcpOff ? { ...fitted, threadConfig: { ...fitted.threadConfig, ...mcpOff } } : fitted,
+      log
     ),
     openInput.signal
   )
