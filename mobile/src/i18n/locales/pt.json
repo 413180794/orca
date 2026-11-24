@@ -5330,8 +5330,7 @@
         "title": "Item",
         "placeOf": "{{index}} de {{total}}",
         "previous": "Item anterior",
-        "next": "Próximo item",
-        "subWhere": "Item {{number}} · {{chat}}"
+        "next": "Próximo item"
       },
       "write": {
         "offline": "{{host}} está offline."
@@ -5340,7 +5339,6 @@
       "readFailedClosedPage": "Não foi possível ler mais itens fechados.",
       "skillLimit": "Mensagem não enviada. Selecione no máximo {{limit}} arquivos de habilidade e tente novamente.",
       "ask": {
-        "notSentYet": "ainda não enviado",
         "replaced": "O agente fez uma nova pergunta. Leia e responda.",
         "replacedByNewer": "Substituída por uma pergunta mais recente",
         "skipped": "Ignoradas"
