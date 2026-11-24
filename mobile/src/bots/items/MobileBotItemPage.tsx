@@ -2,8 +2,8 @@
 // more), the close note, Status (what it waits on under it) and Snoozed while it is, Chat, Done means,
 // Links, Activity, and the comment box docked at the bottom. The agent's question docks chat's answer
 // card in the box's place. Back returns to the list; up and down step through it, "4 of 6".
-import { useContext, useEffect, useRef, useState } from 'react'
-import { Keyboard, Pressable, ScrollView, Text, View } from 'react-native'
+import { useRef, useState } from 'react'
+import { Pressable, ScrollView, Text, View } from 'react-native'
 import { House, MessageSquare } from 'lucide-react-native'
 import { BOTS_ITEM_COMMENT_ATTACHMENTS_RUNTIME_CAPABILITY } from '../../../../src/shared/bot-runtime-capabilities'
 import {
@@ -28,7 +28,6 @@ import { MobileBotTextButton } from '../MobileBotTextButton'
 import type { BotItemQuestionStepsSend } from '../../../../src/shared/bots/use-bot-item-question-steps'
 import { MobileBotItemActivity } from './MobileBotItemActivity'
 import { MobileBotItemCommentBox } from './MobileBotItemCommentBox'
-import { BotItemCommentMicContext } from './bot-item-comment-mic'
 import { botItemOpenAsk, useMobileBotItemAskSlot } from './MobileBotItemAskCard'
 import { MobileNativeChatPromptStrip } from '../../session/native-chat/input/prompts/MobileNativeChatPromptStrip'
 import { MobileBotItemLinks } from './MobileBotItemLinks'
@@ -126,27 +125,19 @@ export function MobileBotItemPage({
     sendComment,
     pending.shown
   )
-  // A reply already on its way answers the question, before the host's read says so; the card stays
-  // mounted under it, so a reply that fails or answers nothing gives its picks back.
+  // A reply already on its way answers the question, before the host's read says so.
   const replying = pending.shown.some(({ failed }) => !failed)
-  const ask = useMobileBotItemAskSlot({
+  const { askOpen, askShown, ...ask } = useMobileBotItemAskSlot({
     ask: view.item ? botItemOpenAsk(view.item, view.events) : null,
     online: online && !view.failed,
+    replying,
+    loaded: view.item !== null,
+    onOpenWithCard: jump.top,
     send: (text, answering) => {
       cardAnswers.current.add(text)
       quick(text, answering)
     }
   })
-  // As chat's card, it waits while dictation runs or lands in the box.
-  const mic = useContext(BotItemCommentMicContext)
-  const askOpen = ask.card !== null && !replying
-  const askShown = askOpen && !ask.folded && !mic?.micActive && !mic?.micProcessing
-  useEffect(() => {
-    // The card takes the comment box's place: a keyboard up for the box would type into it unseen.
-    if (askShown) {
-      Keyboard.dismiss()
-    }
-  }, [askShown])
   const back = <MobileBotItemPageHeader stepper={stepper} online={online} onBack={onBack} />
   const item = view.item
   if (!item) {
@@ -310,6 +301,7 @@ export function MobileBotItemPage({
               pending={pending}
               onReveal={jump.center}
               sent={sent}
+              asking={askOpen}
             />
           </ScrollView>
           {/* A soft edge over the comment box: activity scrolling under it reads as more below. */}
@@ -324,7 +316,7 @@ export function MobileBotItemPage({
           onLayout={(event) => onCommentBoxHeight(event.nativeEvent.layout.height)}
         >
           <View style={askShown ? styles.askSlot : styles.hidden}>{ask.card}</View>
-          <MobileNativeChatPromptStrip prompt={askOpen && !askShown ? ask.strip : null} />
+          <MobileNativeChatPromptStrip prompt={ask.strip} />
           {/* Kept mounted under the card, so its draft and photos stay put. */}
           <View style={askShown ? styles.hidden : undefined}>
             <MobileBotItemCommentBox

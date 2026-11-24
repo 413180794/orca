@@ -32,7 +32,8 @@ export function MobileBotItemCommentCard({
   ref,
   onShowQuestion,
   flash,
-  sent
+  sent,
+  asking = false
 }: {
   item: BotItem
   entry: Pick<Extract<BotItemActivityEntry, { kind: 'comment' }>, 'event' | 'replyTo' | 'waiting'> &
@@ -49,6 +50,8 @@ export function MobileBotItemCommentCard({
   flash?: { at: number; still: boolean; end: () => void }
   /** Answers just posted as one comment, shown on their question's lines. */
   sent?: BotItemSentAnswers | null
+  /** The docked answer card asks this comment's open lines now. */
+  asking?: boolean
 }) {
   const t = useMobileTranslation()
   const { event, replyTo, waiting } = entry
@@ -89,6 +92,7 @@ export function MobileBotItemCommentCard({
             byOrder={entry.byOrder}
             ended={entry.ended}
             sent={sent}
+            asking={asking}
           />
         ) : null}
         {failed ? (

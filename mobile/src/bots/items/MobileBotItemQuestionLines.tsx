@@ -1,5 +1,5 @@
-// A Needs you comment's question lines on the phone. An open line reads as the question; it is answered
-// in the answer card docked at the bottom (MobileBotItemAskCard). Answered, a line reads
+// A Needs you comment's question lines on the phone. An open line reads as the question, except while the
+// answer card docked at the bottom (MobileBotItemAskCard) asks it. Answered, a line reads
 // "Question → answer", muted, and the answer's own comment is not drawn again.
 import { Text, View } from 'react-native'
 import {
@@ -24,7 +24,8 @@ export function MobileBotItemQuestionLines({
   answers = NO_ANSWERS,
   byOrder,
   ended = null,
-  sent = null
+  sent = null,
+  asking = false
 }: {
   shape: BotItemQuestionShape
   /** The ask's event id. */
@@ -39,6 +40,8 @@ export function MobileBotItemQuestionLines({
   ended?: BotItemAskEnd | null
   /** Answers just posted as one comment, shown on their lines until the host's read has it. */
   sent?: BotItemSentAnswers | null
+  /** The docked answer card asks its open lines now: they aren't repeated here. */
+  asking?: boolean
 }) {
   const t = useMobileTranslation()
   const several = shape.decisions.length > 1
@@ -48,9 +51,15 @@ export function MobileBotItemQuestionLines({
     const answer = several && byOrder?.[index] ? null : answers[index]
     return answer ? botItemAnswerWords(shape, index, answer.data) : (posted?.[index] ?? null)
   })
+  const shown = shape.decisions.flatMap((decision, index) =>
+    answered[index] || !(asking && waiting && !answers[index]) ? [{ decision, index }] : []
+  )
+  if (shown.length === 0) {
+    return null
+  }
   return (
     <View style={[several ? styles.several : styles.one, shape.body.trim() && styles.spaced]}>
-      {shape.decisions.map((decision, index) => {
+      {shown.map(({ decision, index }) => {
         const words = answered[index]
         return words ? (
           <Text key={decision.question} style={styles.answerLine}>

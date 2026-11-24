@@ -253,7 +253,8 @@ export function MobileBotItemActivity({
   attachments,
   pending,
   onReveal,
-  sent
+  sent,
+  asking
 }: {
   item: BotItem
   events: readonly BotItemEvent[]
@@ -264,6 +265,8 @@ export function MobileBotItemActivity({
   onReveal: (y: number, height: number, animated: boolean) => void
   /** Answers just posted as one comment. */
   sent: BotItemSentAnswers | null
+  /** The docked answer card asks the waiting question now, so its comment doesn't repeat it. */
+  asking: boolean
 }) {
   useMobileColorScheme()
   const t = useMobileTranslation()
@@ -311,6 +314,7 @@ export function MobileBotItemActivity({
               }}
               onShowQuestion={showQuestion(entry.replyTo?.eventId)}
               sent={sent}
+              asking={asking}
               {...(flash?.id === entry.key
                 ? { flash: { at: flash.at, still, end: endFlash } }
                 : {})}

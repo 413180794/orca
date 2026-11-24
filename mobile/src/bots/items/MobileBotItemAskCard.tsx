@@ -2,7 +2,8 @@
 // with its options (detail, Recommended, pick several where the agent asked so), Other… for your own
 // words, one question at a time when there are several. The answers post as one comment naming the ask,
 // so the agent wakes once; lines left unanswered close as skipped. Not now folds it to the chat's strip.
-import { useState } from 'react'
+import { useContext, useEffect, useRef, useState } from 'react'
+import { Keyboard } from 'react-native'
 import {
   botItemQuestionLine,
   type BotItemQuestionShape
@@ -15,6 +16,7 @@ import type { AskPrompt } from '../../../../src/shared/native-chat/input/questio
 import { useMobileTranslation } from '../../i18n/use-mobile-translation'
 import { MobileNativeChatAsk } from '../../session/native-chat/input/prompts/MobileNativeChatAsk'
 import type { MobileNativeChatCollapsedPrompt } from '../../session/native-chat/input/prompts/MobileNativeChatPromptStrip'
+import { BotItemCommentMicContext } from './bot-item-comment-mic'
 
 type OpenAsk = { askId: string; shape: BotItemQuestionShape; open: number[] }
 
@@ -83,34 +85,70 @@ function answerOf(
 export function useMobileBotItemAskSlot({
   ask,
   online,
+  replying,
+  loaded,
+  onOpenWithCard,
   send
 }: {
   /** Null while nothing waits. */
   ask: OpenAsk | null
   online: boolean
+  /** A reply is on its way: the card stays mounted under the box, so a reply that fails or answers
+   *  nothing gives its picks back. */
+  replying: boolean
+  /** The item is read, so the page has opened. */
+  loaded: boolean
+  /** The page opened with the card up: it starts at its title, not at the end of Activity. */
+  onOpenWithCard: () => void
   send: (text: string, answering: { askId: string; skipped: readonly number[] }) => void
 }): {
   card: React.JSX.Element | null
-  /** Not now, or offline: the strip shows in its place, and the card stays mounted so its picks stay. */
-  folded: boolean
+  /** The card or its strip stands for the question. */
+  askOpen: boolean
+  /** The card shows in the comment box's place. */
+  askShown: boolean
+  /** Not now, offline or dictating: the strip shows in the card's place, which stays mounted. */
   strip: MobileNativeChatCollapsedPrompt | null
 } {
   const t = useMobileTranslation()
   const [folded, setFolded] = useState<string | null>(null)
+  // As chat's card, it waits while dictation runs or lands in the box.
+  const mic = useContext(BotItemCommentMicContext)
+  const key = ask?.askId ?? null
+  const askOpen = ask !== null && !replying
+  const askShown = askOpen && folded !== key && online && !mic?.micActive && !mic?.micProcessing
+  const opened = useRef(false)
+  useEffect(() => {
+    if (!opened.current && loaded) {
+      opened.current = true
+      if (askShown) {
+        onOpenWithCard()
+      }
+    }
+  }, [loaded, askShown, onOpenWithCard])
+  useEffect(() => {
+    // The card takes the comment box's place: a keyboard up for the box would type into it unseen.
+    if (askShown) {
+      Keyboard.dismiss()
+    }
+  }, [askShown])
   if (!ask) {
-    return { card: null, folded: false, strip: null }
+    return { card: null, askOpen, askShown, strip: null }
   }
-  // One card per ask: a line answered elsewhere leaves it, and the other lines keep their picks.
-  const key = ask.askId
   const first = ask.shape.decisions[ask.open[0]!]!
-  const fold = (): void => setFolded(key)
+  const fold = (): void => setFolded(ask.askId)
   return {
-    // Offline it folds too, so the comment box says why; its picks stay for when the host is back.
-    folded: folded === key || !online,
-    strip: { title: botItemQuestionLine(first.question), expand: () => setFolded(null) },
+    askOpen,
+    askShown,
+    strip:
+      askOpen && !askShown
+        ? { title: botItemQuestionLine(first.question), expand: () => setFolded(null) }
+        : null,
+    // One card per ask: a line answered elsewhere leaves it, and the other lines keep their picks.
+    // Offline it folds, so the comment box says why; its picks stay for when the host is back.
     card: (
       <MobileNativeChatAsk
-        key={key}
+        key={ask.askId}
         prompt={askPrompt(ask)}
         questionKeys={ask.open.map(String)}
         answerPending={!online}
@@ -119,7 +157,7 @@ export function useMobileBotItemAskSlot({
           if (!text) {
             return false
           }
-          send(text, { askId: key, skipped })
+          send(text, { askId: ask.askId, skipped })
           return true
         }}
         onCancel={async () => {
