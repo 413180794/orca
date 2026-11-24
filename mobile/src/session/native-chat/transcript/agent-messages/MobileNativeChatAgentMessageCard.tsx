@@ -123,6 +123,8 @@ export const MobileNativeChatAgentMessageCard = memo(function MobileNativeChatAg
   return (
     <MobileNativeChatEventRow
       testID="agent-message-card"
+      // The first line wraps once beside the open button, chevron and time.
+      wordsLines={2}
       icon={<SenderMark agentType={view.agentType} />}
       // The live state never marks a row failed: a restarted worker would un-fail it.
       badge={view.dot === 'working' ? 'running' : null}
