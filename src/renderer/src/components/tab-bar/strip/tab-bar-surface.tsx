@@ -271,8 +271,10 @@ export function renderTabBarSurface(
                 }
                 menuOpen={newTabMenuOpen}
                 menuOptions={createMenuOptions}
-                // A bot's or group's home offers its agents only through its chats, above.
-                hideAgents={bot !== null || botGroup !== null}
+                // A group's home offers its agents only through its thread, below; a bot's home
+                // searches its own chats in their place.
+                hideAgents={botGroup !== null}
+                botHome={bot && !terminalOnly ? { bot, agentMenu } : null}
                 onLaunchAgentOption={launchAgentFromNewTabEntry}
                 onOpenDefaultTerminal={() => {
                   queueNewActiveTerminalFocusAfterNewTabMenuClose()
@@ -287,7 +289,10 @@ export function renderTabBarSurface(
               {showStaticCreateMenuItems ? <DropdownMenuSeparator className="my-0 mb-1.5" /> : null}
             </>
           ) : null}
-          {bot && !terminalOnly ? <BotNewChatMenuItems bot={bot} model={agentMenu} /> : null}
+          {/* While a query is typed, the bot's chats are search results above instead. */}
+          {bot && !terminalOnly && showStaticCreateMenuItems ? (
+            <BotNewChatMenuItems bot={bot} model={agentMenu} />
+          ) : null}
           {botGroup && !terminalOnly ? (
             <>
               <BotGroupNewThreadMenuItems group={botGroup} />
