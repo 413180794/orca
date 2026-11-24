@@ -13,11 +13,9 @@ import { botOfHomeWorkspace } from '../../../../shared/bots/bot-homes'
 import { isBotHomeTab } from '../../../../shared/bots/bot-home-tab'
 
 /** With `hostId`, only a bot on that host, so the same workspace id on two hosts never names the other's bot. */
-export function findBotByWorkspace(
-  bots: readonly Bot[],
-  workspaceId: string | null,
-  hostId?: ExecutionHostId
-): Bot | null {
+export function findBotByWorkspace<
+  B extends Pick<Bot, 'folderWorkspaceId'> & { hostId: ExecutionHostId }
+>(bots: readonly B[], workspaceId: string | null, hostId?: ExecutionHostId): B | null {
   if (!hostId) {
     return botOfHomeWorkspace(bots, workspaceId)
   }
