@@ -1245,7 +1245,13 @@
     "native-chat": {
       "composer": {
         "planMode": "Planificar",
-        "exitPlanMode": "Salir del modo de planificación"
+        "exitPlanMode": "Salir del modo de planificación",
+        "permissionAsk": "Pedir aprobación",
+        "permissionAcceptEdits": "Aceptar ediciones",
+        "permissionAuto": "Aprobar por mí",
+        "permissionFullAccess": "Acceso total",
+        "permissionAgentSettings": "Configuración de {{agent}}",
+        "permissionFromAgentSettings": "{{mode}}, según la configuración de {{agent}}"
       },
       "goal": {
         "sentAsGoal": "Enviado como objetivo"
@@ -3124,9 +3130,6 @@
       "title": "Voz",
       "toggleMode": "Alternar",
       "updateFailed": "No se pudo actualizar"
-    },
-    "agents": {
-      "permissionOwnAll": "Configuración propia de los agentes"
     },
     "voiceTranscribeOn": {
       "heading": "TRANSCRIBIR EN",

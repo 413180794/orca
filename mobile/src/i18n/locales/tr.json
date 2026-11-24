@@ -1202,7 +1202,13 @@
     "native-chat": {
       "composer": {
         "planMode": "Plan",
-        "exitPlanMode": "Plan modundan çık"
+        "exitPlanMode": "Plan modundan çık",
+        "permissionAsk": "Onay iste",
+        "permissionAcceptEdits": "Düzenlemeleri kabul et",
+        "permissionAuto": "Benim yerime onayla",
+        "permissionFullAccess": "Tam erişim",
+        "permissionAgentSettings": "{{agent}} ayarları",
+        "permissionFromAgentSettings": "{{mode}}, {{agent}} ayarlarından"
       },
       "goal": {
         "sentAsGoal": "Hedef olarak gönderildi"
@@ -3044,9 +3050,6 @@
       "title": "Ses",
       "toggleMode": "Aç/kapat",
       "updateFailed": "Güncellenemedi"
-    },
-    "agents": {
-      "permissionOwnAll": "Ajanların kendi ayarları"
     },
     "voiceTranscribeOn": {
       "heading": "YAZIYA DÖKME YERİ",

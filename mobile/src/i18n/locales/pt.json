@@ -1326,7 +1326,13 @@
     "native-chat": {
       "composer": {
         "planMode": "Plano",
-        "exitPlanMode": "Sair do modo de planejamento"
+        "exitPlanMode": "Sair do modo de planejamento",
+        "permissionAsk": "Pedir aprovação",
+        "permissionAcceptEdits": "Aceitar edições",
+        "permissionAuto": "Aprovar por mim",
+        "permissionFullAccess": "Acesso total",
+        "permissionAgentSettings": "Configurações do {{agent}}",
+        "permissionFromAgentSettings": "{{mode}}, conforme as configurações do {{agent}}"
       },
       "turnDiff": {
         "changedFiles_one": "{{count}} arquivo alterado",
@@ -3522,9 +3528,6 @@
       "toggleMode": "Alternar",
       "updateFailed": "Não foi possível atualizar",
       "loading": "Carregando configurações de voz…"
-    },
-    "agents": {
-      "permissionOwnAll": "Configurações próprias dos agentes"
     },
     "voiceTranscribeOn": {
       "heading": "TRANSCREVER EM",
