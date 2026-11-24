@@ -4562,7 +4562,6 @@
     "groups": {
       "group": "群組",
       "peerTold": "{{from}} 告知了 {{to}}",
-      "startAConversationWithThisGroupMentionBots": "與此群組開始對話。用 @名稱 或 @everyone 提及機器人。",
       "items": {
         "thisGroup": "此群組",
         "thread": "討論串",

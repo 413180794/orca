@@ -4649,7 +4649,6 @@
     "groups": {
       "group": "グループ",
       "peerTold": "{{from}} が {{to}} に伝えました",
-      "startAConversationWithThisGroupMentionBots": "このグループで会話を始めましょう。@名前 または @everyone でボットをメンションできます。",
       "items": {
         "thisGroup": "このグループ",
         "thread": "スレッド",

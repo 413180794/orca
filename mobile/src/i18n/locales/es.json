@@ -4675,7 +4675,6 @@
     "groups": {
       "group": "Grupo",
       "peerTold": "{{from}} avisó a {{to}}",
-      "startAConversationWithThisGroupMentionBots": "Empieza una conversación con este grupo. Menciona bots con @Nombre o @everyone.",
       "items": {
         "thisGroup": "Este grupo",
         "thread": "Hilo",
